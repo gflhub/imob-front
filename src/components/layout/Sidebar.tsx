@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { Home, Building, User, FileText, Landmark } from 'lucide-react'; // Ícones
+import { Home, Building, User, FileText, Landmark, Briefcase, Settings } from 'lucide-react'; // Ícones
 import { useAuth } from '@/contexts/AuthContext';
 import { useEffect, useState } from 'react';
 
@@ -7,10 +7,12 @@ import { useEffect, useState } from 'react';
 // Usaremos dados mocados por enquanto.
 const MOCKED_MENU_ITEMS = [
     { href: '/dashboard', label: 'Dashboard', icon: Home },
+    { href: '/company', label: 'Empresas', icon: Briefcase }, // LINK ADICIONADO
     { href: '/properties', label: 'Imóveis', icon: Building }, // ROTA ADICIONADA
     { href: '/customers', label: 'Clientes', icon: User },
     { href: '/orders', label: 'Ordens', icon: FileText },
     { href: '/payments', label: 'Pagamentos', icon: Landmark },
+    { href: '/settings', label: 'Configurações', icon: Settings },
   ];
 
 export function Sidebar() {

@@ -1,13 +1,25 @@
 // src/App.tsx
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
-import { LoginPage } from './pages/LoginPage';
+import { LoginPage } from './pages/main/LoginPage';
 import { AdminLayout } from './layouts/AdminLayout';
-import { DashboardPage } from './pages/DashboardPage';
+import { DashboardPage } from './pages/main/DashboardPage';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { PropertyListPage } from './pages/PropertyListPage';
-import { PropertyFormPage } from './pages/PropertyFormPage';
+import { PropertyListPage } from './pages/property/PropertyListPage';
+import { PropertyFormPage } from './pages/property/PropertyFormPage';
+import { CompanyListPage } from './pages/company/CompanyListPage';
+import { CompanyFormPage } from './pages/company/CompanyFormPage';
+import { CustomerListPage } from './pages/customer/CustomerListPage';
+import { CustomerFormPage } from './pages/customer/CustomerFormPage';
+import { UserListPage } from './pages/settings/users/UserListPage';
+import { OrderListPage } from './pages/order/OrderListPage';
+import { OrderFormPage } from './pages/order/OrderFormPage';
+import { OrderDetailPage } from './pages/order/OrderDetailPage';
+import { PaymentFormPage } from './pages/payment/PaymentFormPage';
+import { SettingsPage } from './pages/settings/SettingsPage';
+
+
 
 const queryClient = new QueryClient();
 
@@ -32,6 +44,18 @@ function AppRoutes() {
             <Route path="/properties" element={<PropertyListPage />} />
             <Route path="/properties/new" element={<PropertyFormPage />} />
             <Route path="/properties/edit/:id" element={<PropertyFormPage />} />
+            <Route path="/customers" element={<CustomerListPage />} />
+            <Route path="/customers/new" element={<CustomerFormPage />} />
+            <Route path="/customers/edit/:id" element={<CustomerFormPage />} />
+            <Route path="/orders" element={<OrderListPage />} />
+            <Route path="/orders/new" element={<OrderFormPage />} />  
+            <Route path="/orders/view/:id" element={<OrderDetailPage />} />
+            <Route path="/orders/:id/add-payment" element={<PaymentFormPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/settings/users" element={<UserListPage />} />
+            <Route path="/settings/companies" element={<CompanyListPage />} />
+            <Route path="/settings/companies/new" element={<CompanyFormPage />} />
+            <Route path="/settings/companies/edit/:id" element={<CompanyFormPage />} />
 
           </Route>
         </Route>

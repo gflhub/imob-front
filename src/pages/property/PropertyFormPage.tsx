@@ -1,17 +1,20 @@
 // src/pages/PropertyFormPage.tsx
-import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { createProperty } from '@/services/property.service';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { createProperty, fetchPropertyById, updateProperty } from '@/services/property.service';
 
+// ... (imports dos componentes Shadcn permanecem os mesmos) ...
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from '@/components/ui/textarea';
+
 
 // 1. Definir o schema de validação com Zod
 const propertyFormSchema = z.object({
@@ -28,6 +31,15 @@ type PropertyFormData = z.infer<typeof propertyFormSchema>;
 export function PropertyFormPage() {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
+    const { id } = useParams<{ id: string }>(); // Pega o ID da URL, se existir
+    const isEditMode = !!id; // Define se estamos no modo de edição
+
+    // 1. Busca os dados do imóvel se estiver em modo de edição
+    const { data: existingProperty, isLoading: isLoadingData } = useQuery({
+        queryKey: ['property', id],
+        queryFn: () => fetchPropertyById(id!),
+        enabled: isEditMode, // SÓ executa a query se houver um ID (modo de edição)
+    });
 
     // 2. Configurar o formulário com React Hook Form e o resolver do Zod
     const form = useForm<PropertyFormData>({
@@ -39,26 +51,48 @@ export function PropertyFormPage() {
         },
     });
 
+    useEffect(() => {
+        if (existingProperty) {
+            form.reset({
+                ...existingProperty,
+                type: existingProperty.type as "apartment" | "house" | "rural" | "land",
+            });
+        }
+    }, [existingProperty, form]);
+
     // 3. Configurar a "Mutation" para lidar com a submissão para a API
-    const { mutate, isPending } = useMutation({
+    const createMutation = useMutation({
         mutationFn: createProperty,
         onSuccess: () => {
-            // Invalida a query de 'properties' para que a lista seja atualizada na próxima vez que for acessada
             queryClient.invalidateQueries({ queryKey: ['properties'] });
-            // Redireciona para a página de listagem
             navigate('/properties');
-            // Adicionar uma notificação de sucesso aqui (usando um "Toast" component)
         },
-        onError: (error) => {
-            // Adicionar uma notificação de erro aqui
-            console.error("Erro ao criar imóvel:", error);
-        }
-    });
+      });
+
+    const updateMutation = useMutation({
+        mutationFn: (data: PropertyFormData) => updateProperty(id!, data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['properties'] });
+            queryClient.invalidateQueries({ queryKey: ['property', id] }); // Invalida o cache deste imóvel específico
+            navigate('/properties');
+        },
+      });
 
     // 4. Função que é chamada ao submeter o formulário
     function onSubmit(data: PropertyFormData) {
-        mutate(data); // Executa a mutation com os dados validados do formulário
+        if (isEditMode) {
+            updateMutation.mutate(data);
+        } else {
+            createMutation.mutate(data);
+        }
+      }
+
+    if (isLoadingData) {
+        return <div>Carregando dados do imóvel...</div>;
     }
+
+    const isSubmitting = createMutation.isPending || updateMutation.isPending;
+    
 
     return (
         <Card>
@@ -140,9 +174,12 @@ export function PropertyFormPage() {
 
                         {/* Adicione outros campos (como 'condition') aqui, seguindo o mesmo padrão */}
 
-                        <div className="flex justify-end">
-                            <Button type="submit" disabled={isPending}>
-                                {isPending ? 'Salvando...' : 'Salvar Imóvel'}
+                        <div className="flex justify-end gap-2">
+                            <Button type="button" variant="outline" onClick={() => navigate('/properties')}>
+                                Cancelar
+                            </Button>
+                            <Button type="submit" disabled={isSubmitting}>
+                                {isSubmitting ? 'Salvando...' : (isEditMode ? 'Salvar Alterações' : 'Salvar Imóvel')}
                             </Button>
                         </div>
                     </form>

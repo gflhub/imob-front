@@ -92,8 +92,11 @@ export function PropertyListPage() {
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                                <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                                <DropdownMenuItem>Editar</DropdownMenuItem>
+                                <Link to={`/properties/edit/${property._id}`}>
+                                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                                        Editar
+                                    </DropdownMenuItem>
+                                </Link>
                                 <DropdownMenuItem className="text-red-600">Desativar</DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
