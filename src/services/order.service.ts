@@ -24,15 +24,15 @@ export interface IOrderPayload {
 
 export const fetchOrders = async (): Promise<IOrder[]> => {
     const response = await api.get('/order');
-    return response.data.data;
+    return response.data;
 };
 
 export const fetchOrderById = async (id: string): Promise<IOrder> => {
     const response = await api.get(`/order/${id}`);
-    return response.data.data;
+    return response.data;
 };
 
 export const createOrder = async (data: IOrderPayload): Promise<IOrder> => {
     const response = await api.post('/order', data);
-    return response.data.data;
+    return response.data;
 };

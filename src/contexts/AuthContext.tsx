@@ -10,6 +10,7 @@ interface User {
     email: string;
     name: string; // Supondo que o nome venha do 'person' populado
     // Adicione outros campos do usuário que você precisar
+    isAdmin?: boolean; // Exemplo de campo adicional
 }
 
 interface Company {

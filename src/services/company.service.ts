@@ -8,6 +8,14 @@ export interface ICompany {
     cnpj: string;
     email: string;
     phone: string;
+    address: {
+        street: string;
+        city: string;
+        state: string;
+        zip: string;
+        country: string;
+        number: string;
+    };
     // Adicione outros campos conforme necessário
 }
 
@@ -15,20 +23,20 @@ export type ICompanyPayload = Omit<ICompany, '_id'>;
 
 export const fetchCompanies = async (): Promise<ICompany[]> => {
     const response = await api.get('/company');
-    return response.data.data;
+    return response.data;
 };
 
 export const fetchCompanyById = async (id: string): Promise<ICompany> => {
     const response = await api.get(`/company/${id}`);
-    return response.data.data;
+    return response.data;
 };
 
 export const createCompany = async (data: ICompanyPayload): Promise<ICompany> => {
     const response = await api.post('/company', data);
-    return response.data.data;
+    return response.data;
 };
 
 export const updateCompany = async (id: string, data: Partial<ICompanyPayload>): Promise<ICompany> => {
     const response = await api.put(`/company/${id}`, data);
-    return response.data.data;
+    return response.data;
 };

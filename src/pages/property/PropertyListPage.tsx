@@ -15,42 +15,42 @@ import React from 'react';
 
 function PropertiesCard({ children }: { children: React.ReactNode }) {
     return (
-    <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-                <CardTitle>Imóveis</CardTitle>
-                <CardDescription>Gerencie os imóveis cadastrados na sua empresa.</CardDescription>
-            </div>
-            <div>
-                <Link to="/properties/new">
-                    <Button size="sm" className="gap-1">
-                        <PlusCircle className="h-3.5 w-3.5" />
-                        <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                            Adicionar Imóvel
-                        </span>
-                    </Button>
-                </Link>
-            </div>
-        </CardHeader>
-        <CardContent>
-            <Table>
-                <TableHeader>
-                    <TableRow>
-                        <TableHead>Título</TableHead>
-                        <TableHead>Tipo</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead className="text-right">Preço</TableHead>
-                        <TableHead>
-                            <span className="sr-only">Ações</span>
-                        </TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {children}
-                </TableBody>
-            </Table>
-        </CardContent>
-    </Card>
+        <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                    <CardTitle>Imóveis</CardTitle>
+                    <CardDescription>Gerencie os imóveis cadastrados na sua empresa.</CardDescription>
+                </div>
+                <div>
+                    <Link to="/properties/new">
+                        <Button size="sm" className="gap-1">
+                            <PlusCircle className="h-3.5 w-3.5" />
+                            <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                                Adicionar Imóvel
+                            </span>
+                        </Button>
+                    </Link>
+                </div>
+            </CardHeader>
+            <CardContent>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Título</TableHead>
+                            <TableHead>Tipo</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead className="text-right">Preço</TableHead>
+                            <TableHead>
+                                <span className="sr-only">Ações</span>
+                            </TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {children}
+                    </TableBody>
+                </Table>
+            </CardContent>
+        </Card>
     );
 }
 
@@ -62,7 +62,23 @@ export function PropertyListPage() {
     });
 
     if (isLoading) {
-        return <PropertiesCard>Carregando imóveis...</PropertiesCard>;
+        return <PropertiesCard>
+            <TableRow >
+                <TableCell colSpan={4}>
+                    Carregando imóveis...
+                </TableCell>
+            </TableRow>
+        </PropertiesCard>;
+    }
+
+    if (isError) {
+        return <PropertiesCard>
+            <TableRow >
+                <TableCell colSpan={4}>
+                    Sem dados para mostrar
+                </TableCell>
+            </TableRow>
+        </PropertiesCard>;
     }
 
     // if (isError) {
