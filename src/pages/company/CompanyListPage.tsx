@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useAuth } from '@/contexts/AuthContext';
 
+
 function DetailItem({ icon: Icon, label, value }: { icon: React.ElementType, label: string, value?: string }) {
     return (
         <div className="flex items-center text-sm">
@@ -18,26 +19,28 @@ function DetailItem({ icon: Icon, label, value }: { icon: React.ElementType, lab
 }
 
 export function CompanyListPage() {
-    const { data: companies, isLoading, isError } = useQuery({
+    const { data: company, isLoading, isError } = useQuery({
         queryKey: ['companies'],
         queryFn: fetchCompanies,
     });
 
-    const user = useAuth();
+    const {user} = useAuth();
+
+    console.log('user ', user)
 
     if (isLoading) {
         return (<Card>
-                    Carregando empresas...
+            Carregando empresas...
         </Card>);
     }
     if (isError) {
         return (<Card>
-                    Sem dados para exibir
+            Sem dados para exibir
         </Card>);
     }
     return (
         <>
-            {companies?.map((company) => (
+            {company && (
                 <Card>
                     <CardHeader className="flex flex-row items-start justify-between">
                         <div>
@@ -47,7 +50,7 @@ export function CompanyListPage() {
                             </CardTitle>
                             <CardDescription>Visualize as informações da sua empresa.</CardDescription>
                         </div>
-                        
+
                         <Link to={`/settings/company/edit`}> {/* Rota para edição */}
                             <Button variant="outline" size="sm" className="gap-1">
                                 <Edit className="h-3.5 w-3.5" />
@@ -64,7 +67,7 @@ export function CompanyListPage() {
                         </div>
                     </CardContent>
                 </Card>
-            ))}
+            )}
         </>
     );
 }

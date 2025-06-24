@@ -21,7 +21,7 @@ export interface ICompany {
 
 export type ICompanyPayload = Omit<ICompany, '_id'>;
 
-export const fetchCompanies = async (): Promise<ICompany[]> => {
+export const fetchCompanies = async (): Promise<ICompany> => {
     const response = await api.get('/company');
     return response.data;
 };
