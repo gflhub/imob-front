@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useFieldArray } from 'react-hook-form';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Trash } from 'lucide-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createBroker, fetchBrokerById, updateBroker } from '@/services/person.service';
@@ -143,34 +144,36 @@ export function BrokerFormPage() {
                                 )} />
                             </TabsContent>
                             <TabsContent value="commission-ranges">
-                                <div className="space-y-4">
+                                <Accordion type="single" collapsible className="w-full">
                                     {commissionRangeFields.map((field, index) => (
-                                        <Card key={field.id} className="p-4">
-                                            <div className="flex justify-between items-center mb-4">
-                                                <h3 className="font-semibold">Faixa de Comissão #{index + 1}</h3>
-                                                <Button type="button" variant="ghost" size="icon" onClick={() => removeCommissionRange(index)}>
+                                        <AccordionItem value={`item-${index}`} key={field.id}>
+                                            <AccordionTrigger>
+                                                Faixa de Comissão #{index + 1}: R$ {field.minAmount} - R$ {field.maxAmount} ({field.rate}%)
+                                                <Button type="button" variant="ghost" size="icon" onClick={() => removeCommissionRange(index)} className="ml-auto">
                                                     <Trash className="h-4 w-4" />
                                                 </Button>
-                                            </div>
-                                            <FormField control={form.control} name={`commissionRanges.${index}.minAmount`} render={({ field }) => (
-                                                <FormItem><FormLabel>Valor Mínimo</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
-                                            )} />
-                                            <FormField control={form.control} name={`commissionRanges.${index}.maxAmount`} render={({ field }) => (
-                                                <FormItem><FormLabel>Valor Máximo</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
-                                            )} />
-                                            <FormField control={form.control} name={`commissionRanges.${index}.rate`} render={({ field }) => (
-                                                <FormItem><FormLabel>Taxa de Comissão (%)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
-                                            )} />
-                                        </Card>
+                                            </AccordionTrigger>
+                                            <AccordionContent className="flex flex-col gap-4 text-balance">
+                                                <FormField control={form.control} name={`commissionRanges.${index}.minAmount`} render={({ field }) => (
+                                                    <FormItem><FormLabel>Valor Mínimo</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
+                                                )} />
+                                                <FormField control={form.control} name={`commissionRanges.${index}.maxAmount`} render={({ field }) => (
+                                                    <FormItem><FormLabel>Valor Máximo</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
+                                                )} />
+                                                <FormField control={form.control} name={`commissionRanges.${index}.rate`} render={({ field }) => (
+                                                    <FormItem><FormLabel>Taxa de Comissão (%)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
+                                                )} />
+                                            </AccordionContent>
+                                        </AccordionItem>
                                     ))}
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        onClick={() => appendCommissionRange({ minAmount: 0, maxAmount: 0, rate: 0 })}
-                                    >
-                                        Adicionar Faixa de Comissão
-                                    </Button>
-                                </div>
+                                </Accordion>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => appendCommissionRange({ minAmount: 0, maxAmount: 0, rate: 0 })}
+                                >
+                                    Adicionar Faixa de Comissão
+                                </Button>
                             </TabsContent>
                         </Tabs>
                         <div className="flex justify-end pt-4 gap-2">
