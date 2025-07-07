@@ -80,16 +80,29 @@ export function BrokerFormPage() {
 
     useEffect(() => {
         if (existingBroker) {
+            const transformedRanges = existingBroker.commission?.ranges.map(range => ({
+                minAmount: range.minAmount,
+                maxAmount: range.maxAmount,
+                rate: range.rate * 100, // Convert to percentage
+            })) || [];
+
             form.reset({
                 ...existingBroker,
-                commissionRanges: existingBroker.commission?.ranges || [],
+                commissionRanges: transformedRanges,
             });
         }
     }, [existingBroker, form]);
 
     const mutation = useMutation({
         mutationFn: (data: BrokerFormData) => {
-            return isEditMode ? updateBroker(id!, data) : createBroker(data);
+            const dataToSend = {
+                ...data,
+                commissionRanges: data.commissionRanges?.map(range => ({
+                    ...range,
+                    rate: range.rate / 100, // Convert back to decimal
+                })),
+            };
+            return isEditMode ? updateBroker(id!, dataToSend) : createBroker(dataToSend);
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['brokers'] });
