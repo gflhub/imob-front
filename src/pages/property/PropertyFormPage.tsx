@@ -175,7 +175,7 @@ export function PropertyFormPage() {
                         {/* Adicione outros campos (como 'condition') aqui, seguindo o mesmo padrão */}
 
                         <div className="flex justify-end gap-2">
-                            <Button type="button" variant="outline" onClick={() => navigate('/properties')}>
+                            <Button type="button" variant="outline" onClick={() => navigate(-1)}>
                                 Cancelar
                             </Button>
                             <Button type="submit" disabled={isSubmitting}>

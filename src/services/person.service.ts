@@ -9,7 +9,14 @@ export interface IPerson {
     phone: string;
     doc: string;
     active: boolean;
+    commissionRanges?: ICommissionRange[];
     // ... outros campos
+}
+
+export interface ICommissionRange {
+    initialValue: number;
+    finalValue: number;
+    commissionValue: number;
 }
 
 export type IPersonPayload = Omit<IPerson, '_id' | 'active' | 'companyId' | 'type'>;

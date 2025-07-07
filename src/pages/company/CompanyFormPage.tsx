@@ -90,7 +90,10 @@ export function CompanyFormPage() {
                             <FormItem><FormLabel>CNPJ</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                         )} />
                         {/* Adicione os outros campos (email, phone, address, etc) seguindo o mesmo padrão */}
-                        <div className="flex justify-end pt-4">
+                        <div className="flex justify-end pt-4 gap-2">
+                            <Button type="button" variant="outline" onClick={() => navigate(-1)}>
+                                Cancelar
+                            </Button>
                             <Button type="submit" disabled={mutation.isPending}>
                                 {mutation.isPending ? 'Salvando...' : 'Salvar'}
                             </Button>

@@ -1,5 +1,5 @@
 // src/pages/order/OrderDetailPage.tsx
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { fetchOrderById, type IOrder } from '@/services/order.service';
 import { fetchPaymentsForOrder, type IPayment } from '@/services/payment.service';
@@ -64,6 +64,7 @@ function PaymentsList({ payments }: { payments?: IPayment[] }) {
 
 export function OrderDetailPage() {
     const { id } = useParams<{ id: string }>();
+    const navigate = useNavigate();
 
     // Busca os detalhes da ordem
     const { data: order, isLoading: loadingOrder } = useQuery({
@@ -86,12 +87,17 @@ export function OrderDetailPage() {
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <h1 className="text-3xl font-bold">Ordem #{order._id.substring(0, 8)}</h1>
-                <Link to={`/orders/${id}/add-payment`}>
-                    <Button size="sm" className="gap-1">
-                        <PlusCircle className="h-4 w-4" />
-                        Adicionar Plano de Pagamento
+                <div className='flex gap-2'>
+                    <Button variant="outline" onClick={() => navigate(-1)}>
+                        Voltar
                     </Button>
-                </Link>
+                    <Link to={`/orders/${id}/add-payment`}>
+                        <Button size="sm" className="gap-1">
+                            <PlusCircle className="h-4 w-4" />
+                            Adicionar Plano de Pagamento
+                        </Button>
+                    </Link>
+                </div>
             </div>
 
             <OrderDetails order={order} />

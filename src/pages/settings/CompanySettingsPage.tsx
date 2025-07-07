@@ -1,5 +1,6 @@
 // src/pages/settings/CompanySettingsPage.tsx
 import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -24,7 +25,7 @@ const companySettingsSchema = z.object({
 type CompanySettingsFormData = z.infer<typeof companySettingsSchema>;
 
 export function CompanySettingsPage() {
-    
+    const navigate = useNavigate();
     const queryClient = useQueryClient();
     const { user, login } = useAuth(); // Usamos o `login` para atualizar os dados no contexto
     const company = user?.company;
@@ -54,6 +55,7 @@ export function CompanySettingsPage() {
             queryClient.invalidateQueries({ queryKey: ['companies'] });
             // Adicionar notificação de sucesso
             alert("Empresa atualizada com sucesso!");
+            navigate("/settings");
         },
     });
 
@@ -79,7 +81,10 @@ export function CompanySettingsPage() {
                         <FormField control={form.control} name="phone" render={({ field }) => (
                             <FormItem><FormLabel>Telefone</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                         )} />
-                        <div className="flex justify-end pt-4">
+                        <div className="flex justify-end pt-4 gap-2">
+                            <Button type="button" variant="outline" onClick={() => navigate(-1)}>
+                                Cancelar
+                            </Button>
                             <Button type="submit" disabled={mutation.isPending}>
                                 {mutation.isPending ? 'Salvando...' : 'Salvar Alterações'}
                             </Button>

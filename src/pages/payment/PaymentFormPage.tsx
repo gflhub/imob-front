@@ -82,7 +82,10 @@ export function PaymentFormPage() {
                             Adicionar outro plano de pagamento
                         </Button>
 
-                        <div className="flex justify-end pt-4">
+                        <div className="flex justify-end pt-4 gap-2">
+                            <Button type="button" variant="outline" onClick={() => navigate(-1)}>
+                                Cancelar
+                            </Button>
                             <Button type="submit" disabled={mutation.isPending}>
                                 {mutation.isPending ? 'Salvando...' : 'Salvar Pagamentos'}
                             </Button>

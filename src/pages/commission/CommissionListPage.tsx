@@ -1,7 +1,7 @@
 // src/pages/commission/CommissionListPage.tsx
 import { useQuery } from '@tanstack/react-query';
 import { fetchCommissionsByBroker, type ICommission } from '@/services/commission.service';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { MoreHorizontal, PlusCircle } from 'lucide-react';
 
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import React from 'react';
 
 function CommissionsCard({ children, brokerName }: { children: React.ReactNode, brokerName: string }) {
     const { brokerId } = useParams<{ brokerId: string }>();
+    const navigate = useNavigate();
     return (
         <Card>
             <CardHeader className="flex flex-row items-center justify-between">
@@ -21,12 +22,17 @@ function CommissionsCard({ children, brokerName }: { children: React.ReactNode, 
                     <CardTitle>Comissões de {brokerName}</CardTitle>
                     <CardDescription>Gerencie as comissões do corretor.</CardDescription>
                 </div>
-                <Link to={`/brokers/${brokerId}/commissions/new`}>
-                    <Button size="sm" className="gap-1">
-                        <PlusCircle className="h-3.5 w-3.5" />
-                        <span className="hidden sm:inline">Adicionar Comissão</span>
+                <div className="flex gap-2">
+                    <Button variant="outline" onClick={() => navigate(-1)}>
+                        Voltar
                     </Button>
-                </Link>
+                    <Link to={`/brokers/${brokerId}/commissions/new`}>
+                        <Button size="sm" className="gap-1">
+                            <PlusCircle className="h-3.5 w-3.5" />
+                            <span className="hidden sm:inline">Adicionar Comissão</span>
+                        </Button>
+                    </Link>
+                </div>
             </CardHeader>
             <CardContent>
                 <Table>
