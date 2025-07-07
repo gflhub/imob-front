@@ -80,7 +80,10 @@ export function BrokerFormPage() {
 
     useEffect(() => {
         if (existingBroker) {
-            form.reset(existingBroker);
+            form.reset({
+                ...existingBroker,
+                commissionRanges: existingBroker.commission?.ranges || [],
+            });
         }
     }, [existingBroker, form]);
 

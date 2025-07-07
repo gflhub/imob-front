@@ -9,7 +9,10 @@ export interface IPerson {
     phone: string;
     doc: string;
     active: boolean;
-    commissionRanges?: ICommissionRange[];
+    commission?: {
+        _id: string;
+        ranges: ICommissionRange[];
+    };
     // ... outros campos
 }
 
