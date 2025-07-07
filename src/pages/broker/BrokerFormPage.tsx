@@ -17,12 +17,12 @@ import { Input } from "@/components/ui/input";
 
 // Schema de validação com Zod para o formulário de corretor
 const commissionRangeSchema = z.object({
-    initialValue: z.coerce.number().min(0, "Valor inicial deve ser positivo."),
-    finalValue: z.coerce.number().positive("Valor final deve ser positivo."),
-    commissionValue: z.coerce.number().min(0, "Valor da comissão deve ser positivo.").max(100, "Valor da comissão não pode exceder 100%"),
-}).refine(data => data.initialValue < data.finalValue, {
+    minAmount: z.coerce.number().min(0, "Valor inicial deve ser positivo."),
+    maxAmount: z.coerce.number().positive("Valor final deve ser positivo."),
+    rate: z.coerce.number().min(0, "Valor da comissão deve ser positivo.").max(100, "Valor da comissão não pode exceder 100%"),
+}).refine(data => data.minAmount < data.maxAmount, {
     message: "Valor inicial deve ser menor que o valor final.",
-    path: ["initialValue"],
+    path: ["minAmount"],
 });
 
 const brokerFormSchema = z.object({
@@ -41,12 +41,12 @@ const brokerFormSchema = z.object({
 
                 // Check for overlap
                 if (
-                    (range1.initialValue < range2.finalValue && range1.finalValue > range2.initialValue)
+                    (range1.minAmount < range2.maxAmount && range1.maxAmount > range2.minAmount)
                 ) {
                     ctx.addIssue({
                         code: z.ZodIssueCode.custom,
                         message: "Faixas de comissão se sobrepõem.",
-                        path: [`commissionRanges.${j}.initialValue`], // Point to the overlapping range
+                        path: [`commissionRanges.${j}.minAmount`], // Point to the overlapping range
                     });
                 }
             }
@@ -136,21 +136,21 @@ export function BrokerFormPage() {
                                                     <Trash className="h-4 w-4" />
                                                 </Button>
                                             </div>
-                                            <FormField control={form.control} name={`commissionRanges.${index}.initialValue`} render={({ field }) => (
-                                                <FormItem><FormLabel>Valor Inicial</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
+                                            <FormField control={form.control} name={`commissionRanges.${index}.minAmount`} render={({ field }) => (
+                                                <FormItem><FormLabel>Valor Mínimo</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
                                             )} />
-                                            <FormField control={form.control} name={`commissionRanges.${index}.finalValue`} render={({ field }) => (
-                                                <FormItem><FormLabel>Valor Final</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
+                                            <FormField control={form.control} name={`commissionRanges.${index}.maxAmount`} render={({ field }) => (
+                                                <FormItem><FormLabel>Valor Máximo</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
                                             )} />
-                                            <FormField control={form.control} name={`commissionRanges.${index}.commissionValue`} render={({ field }) => (
-                                                <FormItem><FormLabel>Valor da Comissão</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
+                                            <FormField control={form.control} name={`commissionRanges.${index}.rate`} render={({ field }) => (
+                                                <FormItem><FormLabel>Taxa de Comissão (%)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
                                             )} />
                                         </Card>
                                     ))}
                                     <Button
                                         type="button"
                                         variant="outline"
-                                        onClick={() => appendCommissionRange({ initialValue: 0, finalValue: 0, commissionValue: 0 })}
+                                        onClick={() => appendCommissionRange({ minAmount: 0, maxAmount: 0, rate: 0 })}
                                     >
                                         Adicionar Faixa de Comissão
                                     </Button>

@@ -14,9 +14,9 @@ export interface IPerson {
 }
 
 export interface ICommissionRange {
-    initialValue: number;
-    finalValue: number;
-    commissionValue: number;
+    minAmount: number;
+    maxAmount: number;
+    rate: number;
 }
 
 export type IPersonPayload = Omit<IPerson, '_id' | 'active' | 'companyId' | 'type'> & { birth?: string; };
