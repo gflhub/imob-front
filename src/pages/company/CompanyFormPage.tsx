@@ -24,6 +24,7 @@ const companyFormSchema = z.object({
         city: z.string().min(2, "Cidade inválida."),
         state: z.string().length(2, "Estado inválido (ex: SP)."),
         zip: z.string().length(8, "CEP inválido."),
+        country: z.string().min(2, "País inválido."),
         complement: z.string().optional(),
     })
 });
@@ -44,7 +45,7 @@ export function CompanyFormPage() {
 
     const form = useForm<CompanyFormData>({
         resolver: zodResolver(companyFormSchema),
-        defaultValues: { name: '', cnpj: '', email: '', phone: '', address: { street: '', number: '', city: '', state: '', zip: '' } },
+        defaultValues: { name: '', cnpj: '', email: '', phone: '', address: { street: '', number: '', city: '', state: '', zip: '', country: '' } },
     });
 
     useEffect(() => {

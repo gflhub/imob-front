@@ -22,9 +22,17 @@ export const fetchCustomers = async (): Promise<IPerson[]> => {
     return response.data;
 };
 
-export const fetchCustomerById = async (id: string): Promise<IPerson> => {
-    const response = await api.get(`/person/customer/${id}`);
+export const fetchPersonById = async (id: string, type: 'customer' | 'broker'): Promise<IPerson> => {
+    const response = await api.get(`/person/${type}/${id}`);
     return response.data;
+};
+
+export const fetchCustomerById = async (id: string): Promise<IPerson> => {
+    return fetchPersonById(id, 'customer');
+};
+
+export const fetchBrokerById = async (id: string): Promise<IPerson> => {
+    return fetchPersonById(id, 'broker');
 };
 
 export const createCustomer = async (data: IPersonPayload): Promise<IPerson> => {
@@ -49,3 +57,8 @@ export const createBroker = async (data: IPersonPayload): Promise<IPerson> => {
     const response = await api.post('/person/broker', data);
     return response.data;
   };
+
+export const updateBroker = async (id: string, data: Partial<IPersonPayload>): Promise<IPerson> => {
+    const response = await api.put(`/person/broker/${id}`, data);
+    return response.data;
+};

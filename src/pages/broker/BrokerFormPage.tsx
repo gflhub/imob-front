@@ -1,67 +1,67 @@
-// src/pages/customer/CustomerFormPage.tsx
+// src/pages/broker/BrokerFormPage.tsx
 import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { createCustomer, fetchCustomerById, updateCustomer } from '@/services/person.service';
+import { createBroker, fetchBrokerById, updateBroker } from '@/services/person.service';
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
-// Schema de validação com Zod para o formulário de cliente
-const customerFormSchema = z.object({
+// Schema de validação com Zod para o formulário de corretor
+const brokerFormSchema = z.object({
     name: z.string().min(3, "O nome deve ter pelo menos 3 caracteres."),
     email: z.string().email("Formato de email inválido."),
     phone: z.string().min(10, "Telefone inválido."),
     doc: z.string().min(11, "Documento inválido."),
-    birth: z.string().min(8, "Data de nascimento inválida."),
+    birth: z.string().min(8, "Data de nascimento inválida.").optional(), // Birth can be optional for brokers
 });
 
-type CustomerFormData = z.infer<typeof customerFormSchema>;
+type BrokerFormData = z.infer<typeof brokerFormSchema>;
 
-export function CustomerFormPage() {
+export function BrokerFormPage() {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
     const { id } = useParams<{ id: string }>();
     const isEditMode = !!id;
 
-    const { data: existingCustomer, isLoading: isLoadingData } = useQuery({
-        queryKey: ['customer', id],
-        queryFn: () => fetchCustomerById(id!),
+    const { data: existingBroker, isLoading: isLoadingData } = useQuery({
+        queryKey: ['broker', id],
+        queryFn: () => fetchBrokerById(id!),
         enabled: isEditMode,
     });
 
-    const form = useForm<CustomerFormData>({
-        resolver: zodResolver(customerFormSchema),
+    const form = useForm<BrokerFormData>({
+        resolver: zodResolver(brokerFormSchema),
         defaultValues: { name: '', email: '', phone: '', doc: '', birth: '' },
     });
 
     useEffect(() => {
-        if (existingCustomer) {
-            form.reset(existingCustomer);
+        if (existingBroker) {
+            form.reset(existingBroker);
         }
-    }, [existingCustomer, form]);
+    }, [existingBroker, form]);
 
     const mutation = useMutation({
-        mutationFn: (data: CustomerFormData) => {
-            return isEditMode ? updateCustomer(id!, data) : createCustomer(data);
+        mutationFn: (data: BrokerFormData) => {
+            return isEditMode ? updateBroker(id!, data) : createBroker(data);
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['customers'] });
-            navigate('/customers');
+            queryClient.invalidateQueries({ queryKey: ['brokers'] });
+            navigate('/brokers');
         },
     });
 
-    if (isLoadingData) return <div>Carregando cliente...</div>;
+    if (isLoadingData) return <div>Carregando corretor...</div>;
 
     return (
         <Card>
             <CardHeader>
-                <CardTitle>{isEditMode ? 'Editar Cliente' : 'Adicionar Novo Cliente'}</CardTitle>
+                <CardTitle>{isEditMode ? 'Editar Corretor' : 'Adicionar Novo Corretor'}</CardTitle>
             </CardHeader>
             <CardContent>
                 <Form {...form}>

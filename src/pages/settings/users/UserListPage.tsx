@@ -10,14 +10,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Badge } from '@/components/ui/badge';
 
-export function UserListPage() {
-    const { data: brokers, isLoading } = useQuery({
-        queryKey: ['brokers'],
-        queryFn: fetchBrokers,
-    });
+import React from 'react';
 
-    if (isLoading) return <div>Carregando usuários...</div>;
-
+function UsersCard({ children }: { children: React.ReactNode }) {
     return (
         <Card>
             <CardHeader className="flex flex-row items-center justify-between">
@@ -44,36 +39,73 @@ export function UserListPage() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {brokers?.map((broker) => (
-                            <TableRow key={broker._id}>
-                                <TableCell className="font-medium">{broker.name}</TableCell>
-                                <TableCell>{broker.email}</TableCell>
-                                <TableCell>{broker.phone}</TableCell>
-                                <TableCell>
-                                    <Badge variant={broker.active ? 'default' : 'destructive'}>
-                                        {broker.active ? 'Ativo' : 'Inativo'}
-                                    </Badge>
-                                </TableCell>
-                                <TableCell>
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button aria-haspopup="true" size="icon" variant="ghost">
-                                                <MoreHorizontal className="h-4 w-4" />
-                                            </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end">
-                                            <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                                            <Link to={`/brokers/edit/${broker._id}`}>
-                                                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Editar</DropdownMenuItem>
-                                            </Link>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
-                                </TableCell>
-                            </TableRow>
-                        ))}
+                        {children}
                     </TableBody>
                 </Table>
             </CardContent>
         </Card>
+    );
+}
+
+export function UserListPage() {
+    const { data: brokers, isLoading, isError } = useQuery({
+        queryKey: ['brokers'],
+        queryFn: fetchBrokers,
+    });
+
+    if (isLoading) {
+        return (
+            <UsersCard>
+                <TableRow>
+                    <TableCell colSpan={5}>
+                        Carregando usuários...
+                    </TableCell>
+                </TableRow>
+            </UsersCard>
+        );
+    }
+
+    if (isError) {
+        return (
+            <UsersCard>
+                <TableRow>
+                    <TableCell colSpan={5}>
+                        Erro ao carregar os dados.
+                    </TableCell>
+                </TableRow>
+            </UsersCard>
+        );
+    }
+
+    return (
+        <UsersCard>
+            {brokers?.map((broker) => (
+                <TableRow key={broker._id}>
+                    <TableCell className="font-medium">{broker.name}</TableCell>
+                    <TableCell>{broker.email}</TableCell>
+                    <TableCell>{broker.phone}</TableCell>
+                    <TableCell>
+                        <Badge variant={broker.active ? 'default' : 'destructive'}>
+                            {broker.active ? 'Ativo' : 'Inativo'}
+                        </Badge>
+                    </TableCell>
+                    <TableCell>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button aria-haspopup="true" size="icon" variant="ghost">
+                                    <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                                <Link to={`/brokers/edit/${broker._id}`}>
+                                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Editar</DropdownMenuItem>
+                                </Link>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </TableCell>
+                </TableRow>
+            ))}
+        </UsersCard>
     );
 }

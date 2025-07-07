@@ -18,6 +18,10 @@ import { OrderDetailPage } from './pages/order/OrderDetailPage';
 import { PaymentFormPage } from './pages/payment/PaymentFormPage';
 import { SettingsPage } from './pages/settings/SettingsPage';
 import { CashierPage } from './pages/cashier/CashierPage';
+import { BrokerListPage } from './pages/broker/BrokerListPage';
+import { BrokerFormPage } from './pages/broker/BrokerFormPage';
+import { CommissionListPage } from './pages/commission/CommissionListPage';
+import { CommissionFormPage } from './pages/commission/CommissionFormPage';
 
 
 
@@ -40,7 +44,12 @@ function AppRoutes() {
         <Route element={<ProtectedRoute />}>
           <Route element={<AdminLayout />}>
             <Route path="/dashboard" element={<DashboardPage />} />
-            {/* ADICIONA A NOVA ROTA AQUI */}
+            <Route path="/brokers" element={<BrokerListPage />} />
+            <Route path="/brokers/new" element={<BrokerFormPage />} />
+            <Route path="/brokers/edit/:id" element={<BrokerFormPage />} />
+            <Route path="/brokers/:brokerId/commissions" element={<CommissionListPage />} />
+            <Route path="/brokers/:brokerId/commissions/new" element={<CommissionFormPage />} />
+            <Route path="/brokers/:brokerId/commissions/edit/:id" element={<CommissionFormPage />} />
             <Route path="/properties" element={<PropertyListPage />} />
             <Route path="/properties/new" element={<PropertyFormPage />} />
             <Route path="/properties/edit/:id" element={<PropertyFormPage />} />

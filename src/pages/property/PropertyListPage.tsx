@@ -5,7 +5,7 @@ import { fetchProperties } from '@/services/property.service';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Badge } from '@/components/ui/badge';
 import { MoreHorizontal, PlusCircle } from "lucide-react";
 import { Link } from 'react-router-dom';
@@ -56,7 +56,7 @@ function PropertiesCard({ children }: { children: React.ReactNode }) {
 
 export function PropertyListPage() {
     // O hook useQuery busca os dados e gerencia os estados de loading e erro para nós.
-    const { data: properties, isLoading, isError, error } = useQuery({
+    const { data: properties, isLoading, isError } = useQuery({
         queryKey: ['properties'], // Uma chave única para esta query
         queryFn: fetchProperties, // A função que busca os dados
     });

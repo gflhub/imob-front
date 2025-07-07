@@ -1,7 +1,7 @@
-// src/pages/customer/CustomerListPage.tsx
+// src/pages/commission/CommissionListPage.tsx
 import { useQuery } from '@tanstack/react-query';
-import { fetchCustomers } from '@/services/person.service';
-import { Link } from 'react-router-dom';
+import { fetchCommissionsByBroker, type ICommission } from '@/services/commission.service';
+import { Link, useParams } from 'react-router-dom';
 import { MoreHorizontal, PlusCircle } from 'lucide-react';
 
 import { Button } from "@/components/ui/button";
@@ -12,18 +12,19 @@ import { Badge } from '@/components/ui/badge';
 
 import React from 'react';
 
-function CustomersCard({ children }: { children: React.ReactNode }) {
+function CommissionsCard({ children, brokerName }: { children: React.ReactNode, brokerName: string }) {
+    const { brokerId } = useParams<{ brokerId: string }>();
     return (
         <Card>
             <CardHeader className="flex flex-row items-center justify-between">
                 <div>
-                    <CardTitle>Clientes</CardTitle>
-                    <CardDescription>Gerencie os clientes da sua empresa.</CardDescription>
+                    <CardTitle>Comissões de {brokerName}</CardTitle>
+                    <CardDescription>Gerencie as comissões do corretor.</CardDescription>
                 </div>
-                <Link to="/customers/new">
+                <Link to={`/brokers/${brokerId}/commissions/new`}>
                     <Button size="sm" className="gap-1">
                         <PlusCircle className="h-3.5 w-3.5" />
-                        <span className="hidden sm:inline">Adicionar Cliente</span>
+                        <span className="hidden sm:inline">Adicionar Comissão</span>
                     </Button>
                 </Link>
             </CardHeader>
@@ -31,9 +32,9 @@ function CustomersCard({ children }: { children: React.ReactNode }) {
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead>Nome</TableHead>
-                            <TableHead>Email</TableHead>
-                            <TableHead>Telefone</TableHead>
+                            <TableHead>Ordem</TableHead>
+                            <TableHead>Valor</TableHead>
+                            <TableHead>Data</TableHead>
                             <TableHead>Status</TableHead>
                             <TableHead><span className="sr-only">Ações</span></TableHead>
                         </TableRow>
@@ -47,46 +48,51 @@ function CustomersCard({ children }: { children: React.ReactNode }) {
     );
 }
 
-export function CustomerListPage() {
-    const { data: customers, isLoading, isError } = useQuery({
-        queryKey: ['customers'],
-        queryFn: fetchCustomers,
+export function CommissionListPage() {
+    const { brokerId } = useParams<{ brokerId: string }>();
+    // TODO: Fetch broker name to display in the card title
+    const brokerName = "Corretor"; // Placeholder
+
+    const { data: commissions, isLoading, isError } = useQuery<ICommission[]> ({
+        queryKey: ['commissions', brokerId],
+        queryFn: () => fetchCommissionsByBroker(brokerId!),
+        enabled: !!brokerId,
     });
 
     if (isLoading) {
         return (
-            <CustomersCard>
+            <CommissionsCard brokerName={brokerName}>
                 <TableRow>
                     <TableCell colSpan={5}>
-                        Carregando clientes...
+                        Carregando comissões...
                     </TableCell>
                 </TableRow>
-            </CustomersCard>
+            </CommissionsCard>
         );
     }
 
     if (isError) {
         return (
-            <CustomersCard>
+            <CommissionsCard brokerName={brokerName}>
                 <TableRow>
                     <TableCell colSpan={5}>
                         Erro ao carregar os dados.
                     </TableCell>
                 </TableRow>
-            </CustomersCard>
+            </CommissionsCard>
         );
     }
 
     return (
-        <CustomersCard>
-            {customers?.map((customer) => (
-                <TableRow key={customer._id}>
-                    <TableCell className="font-medium">{customer.name}</TableCell>
-                    <TableCell>{customer.email}</TableCell>
-                    <TableCell>{customer.phone}</TableCell>
+        <CommissionsCard brokerName={brokerName}>
+            {commissions?.map((commission) => (
+                <TableRow key={commission._id}>
+                    <TableCell className="font-medium">{commission.orderId.substring(0, 8)}</TableCell>
+                    <TableCell>{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(commission.amount)}</TableCell>
+                    <TableCell>{new Date(commission.commissionDate).toLocaleDateString()}</TableCell>
                     <TableCell>
-                        <Badge variant={customer.active ? 'default' : 'destructive'}>
-                            {customer.active ? 'Ativo' : 'Inativo'}
+                        <Badge variant={commission.status === 'paid' ? 'default' : 'destructive'}>
+                            {commission.status === 'paid' ? 'Pago' : 'Pendente'}
                         </Badge>
                     </TableCell>
                     <TableCell>
@@ -98,7 +104,7 @@ export function CustomerListPage() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                                 <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                                <Link to={`/customers/edit/${customer._id}`}>
+                                <Link to={`/brokers/${brokerId}/commissions/edit/${commission._id}`}>
                                     <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Editar</DropdownMenuItem>
                                 </Link>
                             </DropdownMenuContent>
@@ -106,6 +112,6 @@ export function CustomerListPage() {
                     </TableCell>
                 </TableRow>
             ))}
-        </CustomersCard>
+        </CommissionsCard>
     );
 }

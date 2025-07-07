@@ -16,6 +16,8 @@ interface User {
 interface Company {
     _id: string;
     name: string;
+    email: string;
+    phone: string;
     // Adicione outros campos da empresa
 }
 

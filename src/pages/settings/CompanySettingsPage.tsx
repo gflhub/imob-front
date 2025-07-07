@@ -1,6 +1,6 @@
 // src/pages/settings/CompanySettingsPage.tsx
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -24,7 +24,7 @@ const companySettingsSchema = z.object({
 type CompanySettingsFormData = z.infer<typeof companySettingsSchema>;
 
 export function CompanySettingsPage() {
-    const navigate = useNavigate();
+    
     const queryClient = useQueryClient();
     const { user, login } = useAuth(); // Usamos o `login` para atualizar os dados no contexto
     const company = user?.company;
@@ -69,7 +69,7 @@ export function CompanySettingsPage() {
             </CardHeader>
             <CardContent>
                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(mutation.mutate)} className="space-y-4">
+                    <form onSubmit={form.handleSubmit(data => mutation.mutate(data))} className="space-y-4">
                         <FormField control={form.control} name="name" render={({ field }) => (
                             <FormItem><FormLabel>Nome da Empresa</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                         )} />
