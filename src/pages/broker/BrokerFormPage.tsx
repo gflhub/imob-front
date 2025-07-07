@@ -46,8 +46,8 @@ const brokerFormSchema = z.object({
                 ) {
                     ctx.addIssue({
                         code: z.ZodIssueCode.custom,
-                        message: "Faixas de comissão se sobrepõem.",
-                        path: [`commissionRanges.${j}.minAmount`], // Point to the overlapping range
+                        message: `Faixas de comissão ${i + 1} e ${j + 1} se sobrepõem.`, // More specific message
+                        path: ['commissionRanges'], // Point to the array itself
                     });
                 }
             }
@@ -144,7 +144,7 @@ export function BrokerFormPage() {
                                 )} />
                             </TabsContent>
                             <TabsContent value="commission-ranges">
-                                <Accordion type="single" collapsible className="w-full">
+                                <Accordion type="single" collapsible className="w-full mb-5">
                                     {commissionRangeFields.map((field, index) => (
                                         <AccordionItem value={`item-${index}`} key={field.id}>
                                             <AccordionTrigger>
