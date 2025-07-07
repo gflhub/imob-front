@@ -19,7 +19,7 @@ export interface ICommissionRange {
     commissionValue: number;
 }
 
-export type IPersonPayload = Omit<IPerson, '_id' | 'active' | 'companyId' | 'type'>;
+export type IPersonPayload = Omit<IPerson, '_id' | 'active' | 'companyId' | 'type'> & { birth?: string; };
 
 // --- Métodos para Clientes ---
 
