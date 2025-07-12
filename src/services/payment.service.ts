@@ -55,7 +55,7 @@ export const fetchPaymentsForOrder = async (orderId: string): Promise<IPayment[]
     return response.data;
 };
 
-export const createPayments = async (data: ICreatePaymentPayload): Promise<any> => {
+export const createPayments = async (data: ICreatePaymentPayload): Promise<IPayment[]> => {
     const response = await api.post('/payment', data);
     return response.data;
 };

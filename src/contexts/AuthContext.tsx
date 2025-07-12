@@ -9,8 +9,8 @@ interface User {
     _id: string;
     email: string;
     name: string; // Supondo que o nome venha do 'person' populado
+    type: 'user' | 'admin';
     // Adicione outros campos do usuário que você precisar
-    isAdmin?: boolean; // Exemplo de campo adicional
 }
 
 interface Company {
@@ -21,14 +21,6 @@ interface Company {
     // Adicione outros campos da empresa
 }
 
-// interface AuthContextType {
-//     isAuthenticated: boolean;
-//     user: (User & { company?: Company | null }) | null;
-//     token: string | null;
-//     login: (token: string, userData: User & { company?: Company | null }) => void;
-//     logout: () => void;
-//     isLoading: boolean;
-// }
 interface AuthContextType {
     isAuthenticated: boolean;
     user: (User & { company?: Company | null }) | null;

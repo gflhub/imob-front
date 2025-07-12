@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom'; // Para redirecionar o usuário
 import { useAuth } from '@/contexts/AuthContext'; // Nosso hook de autenticação
 import api from '@/services/api'; // Nosso serviço de API configurado com Axios
+import { AlertTriangle } from 'lucide-react';
+import axios from 'axios';
 
 import { Button } from "@/components/ui/button";
 import {
@@ -29,35 +31,31 @@ export function LoginPage() {
     const [error, setError] = useState<string | null>(null);
 
     const handleSubmit = async (event: React.FormEvent) => {
-        event.preventDefault();
+        event.preventDefault(); // Impede o comportamento padrão de submissão do formulário
         setIsLoading(true);
         setError(null);
 
         try {
-            // Faz a chamada real para a API NestJS
             const response = await api.post('/auth/login', {
                 email,
                 password,
             });
 
-            // A resposta da API NestJS, usando nosso defaultResponse,
-            // deve ter a seguinte estrutura: { status, message, data: { user, access_token } }
-            const responseData = response.data; // Acessa o objeto 'data' da nossa resposta padrão
+            const responseData = response.data;
 
             if (responseData && responseData.access_token && responseData.user) {
-                // Se a chamada for bem-sucedida, chamamos a função 'login' do nosso contexto
-                // para salvar o token e os dados do usuário globalmente e no localStorage.
                 login(responseData.access_token, responseData.user);
-
-                // Redireciona o usuário para o dashboard
-                navigate('/dashboard');
+                navigate('/dashboard'); // Redireciona APÓS o login bem-sucedido
             } else {
-                // Caso a resposta da API não venha no formato esperado
                 throw new Error('Resposta da API inválida.');
             }
-        } catch (err: any) {
-            // Captura o erro retornado pela API (ex: "Credenciais inválidas")
-            const errorMessage = err.response?.data?.message || err.message || 'Ocorreu um erro inesperado.';
+        } catch (err) {
+            let errorMessage = 'Ocorreu um erro inesperado.';
+            if (axios.isAxiosError(err) && err.response) {
+                errorMessage = err.response.data.message || err.message;
+            } else if (err instanceof Error) {
+                errorMessage = err.message;
+            }
             setError(errorMessage);
         } finally {
             setIsLoading(false);
@@ -73,7 +71,7 @@ export function LoginPage() {
                         Entre com suas credenciais para acessar o painel SE-Imob.
                     </CardDescription>
                 </CardHeader>
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit} className='gap-4 grid'>
                     <CardContent className="grid gap-4">
                         <div className="grid gap-2">
                             <Label htmlFor="email">Email</Label>
@@ -98,7 +96,12 @@ export function LoginPage() {
                                 disabled={isLoading}
                             />
                         </div>
-                        {error && <p className="text-sm font-medium text-red-600">{error}</p>}
+                        {error && (
+                            <div className="flex items-center gap-2 rounded-md border border-destructive bg-destructive/10 p-3 text-sm text-destructive">
+                                <AlertTriangle className="h-4 w-4" />
+                                <p>{error}</p>
+                            </div>
+                        )}
                     </CardContent>
                     <CardFooter>
                         <Button className="w-full" type="submit" disabled={isLoading}>

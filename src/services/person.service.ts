@@ -24,6 +24,11 @@ export interface ICommissionRange {
 
 export type IPersonPayload = Omit<IPerson, '_id' | 'active' | 'companyId' | 'type'> & { birth?: string; };
 
+export const fetchPersons = async (): Promise<IPerson[]> => {
+    const response = await api.get('/person');
+    return response.data;
+};
+
 // --- Métodos para Clientes ---
 
 export const fetchCustomers = async (): Promise<IPerson[]> => {

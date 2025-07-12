@@ -11,7 +11,7 @@ import { PropertyFormPage } from './pages/property/PropertyFormPage';
 import { CompanyListPage } from './pages/company/CompanyListPage';
 import { CustomerListPage } from './pages/customer/CustomerListPage';
 import { CustomerFormPage } from './pages/customer/CustomerFormPage';
-import { UserListPage } from './pages/settings/users/UserListPage';
+
 import { OrderListPage } from './pages/order/OrderListPage';
 import { OrderFormPage } from './pages/order/OrderFormPage';
 import { OrderDetailPage } from './pages/order/OrderDetailPage';
@@ -24,6 +24,10 @@ import { CommissionListPage } from './pages/commission/CommissionListPage';
 import { CommissionFormPage } from './pages/commission/CommissionFormPage';
 
 
+
+import { AccessControlPage } from './pages/settings/access-control/AccessControlPage';
+import { UserFormPage } from './pages/settings/access-control/users/UserFormPage';
+import { RoleFormPage } from './pages/settings/access-control/roles/RoleFormPage';
 
 const queryClient = new QueryClient();
 
@@ -63,8 +67,13 @@ function AppRoutes() {
             <Route path="/payments" element={<PaymentFormPage />} />
             <Route path="/cashier" element={<CashierPage />} />
             <Route path="/settings" element={<SettingsPage />} />
-            <Route path="/settings/users" element={<UserListPage />} />
+            
             <Route path="/settings/company" element={<CompanyListPage />} />
+            <Route path="/settings/access-control" element={<AccessControlPage />} />
+            <Route path="/settings/access-control/users/new" element={<UserFormPage />} />
+            <Route path="/settings/access-control/users/edit/:id" element={<UserFormPage />} />
+            <Route path="/settings/access-control/roles/new" element={<RoleFormPage />} />
+            <Route path="/settings/access-control/roles/edit/:id" element={<RoleFormPage />} />
             {/* <Route path="/settings/company/new" element={<CompanyFormPage />} />
             <Route path="/settings/company/edit/:id" element={<CompanyFormPage />} /> */}
 

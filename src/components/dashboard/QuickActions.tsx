@@ -8,7 +8,7 @@ export function QuickActions() {
     const actionItems = MENU_ITEMS.filter(item => item.href !== '/dashboard');
 
     return (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+        <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6 xl:grid-cols-6">
             {actionItems.map((item) => (
                 <Link to={item.href} key={item.href}>
                     <Card className="hover:bg-muted/50 hover:border-primary/50 transition-colors">

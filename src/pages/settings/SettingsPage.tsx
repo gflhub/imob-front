@@ -1,32 +1,43 @@
 // src/pages/settings/SettingsPage.tsx
 import { Link } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { ArrowRight, Building, Users, Target } from 'lucide-react';
-
-// Itens de configuração que aparecerão na página
-const settingsItems = [
-    {
-        title: 'Dados da Empresa',
-        description: 'Visualize e edite as informações da sua empresa.',
-        href: '/settings/company',
-        icon: Building,
-    },
-    {
-        title: 'Gerenciar Usuários',
-        description: 'Adicione, edite ou desative corretores e outros usuários do sistema.',
-        href: '/settings/users',
-        icon: Users,
-    },
-    {
-        title: 'Metas e Comissões',
-        description: 'Defina as metas de venda e as regras de comissionamento.',
-        href: '#', // Link desabilitado por enquanto
-        icon: Target,
-        disabled: true,
-    },
-];
+import { ArrowRight, Building, Users, Target, ShieldCheck } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 export function SettingsPage() {
+    const { user } = useAuth();
+
+    const settingsItems = [
+        {
+            title: 'Dados da Empresa',
+            description: 'Visualize e edite as informações da sua empresa.',
+            href: '/settings/company',
+            icon: Building,
+        },
+        {
+            title: 'Gerenciar Corretores',
+            description: 'Adicione, edite ou desative corretores.',
+            href: '/brokers',
+            icon: Users,
+        },
+        {
+            title: 'Controle de Acesso',
+            description: 'Gerencie usuários, papéis e permissões do sistema.',
+            href: '/settings/access-control',
+            icon: ShieldCheck,
+            adminOnly: true,
+        },
+        {
+            title: 'Metas e Comissões',
+            description: 'Defina as metas de venda e as regras de comissionamento.',
+            href: '#', // Link desabilitado por enquanto
+            icon: Target,
+            disabled: true,
+        },
+    ];
+
+    const availableItems = settingsItems.filter(item => !item.adminOnly || user?.type === 'admin');
+
     return (
         <div className="space-y-6">
             <div>
@@ -35,7 +46,7 @@ export function SettingsPage() {
             </div>
 
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {settingsItems.map((item) => (
+                {availableItems.map((item) => (
                     <Link key={item.title} to={item.href} className={item.disabled ? 'pointer-events-none' : ''}>
                         <Card className={`h-full flex flex-col hover:border-primary transition-colors ${item.disabled ? 'bg-muted/50' : ''}`}>
                             <CardHeader>
