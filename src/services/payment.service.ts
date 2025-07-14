@@ -61,7 +61,7 @@ export const createPayments = async (data: ICreatePaymentPayload): Promise<IPaym
 };
 
 export const fetchInstallments = async (customerName?: string): Promise<IInstallment[]> => {
-    const response = await api.get('/installments', {
+    const response = await api.get('/payment/installments', {
         params: { customerName: customerName || undefined },
     });
     return response.data.data;
@@ -75,7 +75,7 @@ export const fetchCashierSummary = async (): Promise<ICashierSummary> => {
 
 // Realiza o recebimento de uma parcela
 export const receiveInstallment = async (installmentId: string, paymentDate: string): Promise<IInstallment> => {
-    const response = await api.patch(`/installments/${installmentId}/receive`, {
+    const response = await api.patch(`/payment/installments/${installmentId}/receive`, {
         paymentDate,
     });
     return response.data.data;
