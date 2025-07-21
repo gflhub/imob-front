@@ -51,14 +51,14 @@ export function Combobox({
                     {value
                         ? options.find((option) => option.value === value)?.label
                         : placeholder}
-                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    <ChevronsUpDown className="ml-2 max-h-4 max-w-4 shrink-0 opacity-50" />
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+            <PopoverContent className="min-w-fit p-2">
                 <Command>
                     <CommandInput placeholder={searchPlaceholder} />
-                    <CommandEmpty>{notFoundMessage}</CommandEmpty>
-                    <CommandList>
+                    <CommandEmpty className="p-2 text-center">{notFoundMessage}</CommandEmpty>
+                    <CommandList className={options.length === 0 ? "hidden" : ''}>
                         <CommandGroup>
                             {options.map((option) => (
                                 <CommandItem
@@ -71,7 +71,7 @@ export function Combobox({
                                 >
                                     <Check
                                         className={cn(
-                                            "mr-2 h-4 w-4",
+                                            "mr-2 max-h-4 max-w-4",
                                             value === option.value ? "opacity-100" : "opacity-0"
                                         )}
                                     />

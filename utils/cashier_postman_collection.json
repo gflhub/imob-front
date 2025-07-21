@@ -1,0 +1,218 @@
+{
+  "info": {
+    "_postman_id": "c8a1b2d3-4e5f-6a7b-8c9d-0e1f2a3b4c5d",
+    "name": "Cashier and Payments API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Cashier",
+      "item": [
+        {
+          "name": "Get Cashier Summary",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/payment/cashier/summary",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "payment",
+                "cashier",
+                "summary"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/payment/cashier/summary",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "payment",
+                    "cashier",
+                    "summary"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n    \"data\": {\n        \"dueToday\": {\n            \"count\": 2,\n            \"total\": 1500.75\n        },\n        \"overdue\": {\n            \"count\": 5,\n            \"total\": 4350.50\n        },\n        \"paidToday\": {\n            \"count\": 10,\n            \"total\": 9870.00\n        }\n    }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Installments",
+      "item": [
+        {
+          "name": "List All Installments",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/installments",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "installments"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/installments",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "installments"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n    \"data\": [\n        {\n            \"_id\": \"60d5f9f6c7b7c3b3b8b4b4b4\",\n            \"orderId\": \"60d5f9f6c7b7c3b3b8b4b4a1\",\n            \"payer\": {\n                \"_id\": \"60d5f9f6c7b7c3b3b8b4b4c2\",\n                \"name\": \"John Doe\"\n            },\n            \"dueDate\": \"2025-07-13T00:00:00.000Z\",\n            \"amount\": 750.50,\n            \"status\": \"pending\"\n        },\n        {\n            \"_id\": \"60d5f9f6c7b7c3b3b8b4b4b5\",\n            \"orderId\": \"60d5f9f6c7b7c3b3b8b4b4a2\",\n            \"payer\": {\n                \"_id\": \"60d5f9f6c7b7c3b3b8b4b4c3\",\n                \"name\": \"Jane Smith\"\n            },\n            \"dueDate\": \"2025-07-10T00:00:00.000Z\",\n            \"amount\": 1200.00,\n            \"status\": \"overdue\"\n        }\n    ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "List Installments by Customer Name",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/installments?customerName=John",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "installments"
+              ],
+              "query": [
+                {                  "key": "customerName",
+                  "value": "John"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Receive Installment",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"paymentDate\": \"2025-07-13T10:00:00.000Z\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/installments/60d5f9f6c7b7c3b3b8b4b4b4/receive",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "installments",
+                "60d5f9f6c7b7c3b3b8b4b4b4",
+                "receive"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"paymentDate\": \"2025-07-13T10:00:00.000Z\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/installments/60d5f9f6c7b7c3b3b8b4b4b4/receive",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "installments",
+                    "60d5f9f6c7b7c3b3b8b4b4b4",
+                    "receive"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n    \"data\": {\n        \"_id\": \"60d5f9f6c7b7c3b3b8b4b4b4\",\n        \"orderId\": \"60d5f9f6c7b7c3b3b8b4b4a1\",\n        \"payer\": {\n            \"_id\": \"60d5f9f6c7b7c3b3b8b4b4c2\",\n            \"name\": \"John Doe\"\n        },\n        \"dueDate\": \"2025-07-13T00:00:00.000Z\",\n        \"amount\": 750.50,\n        \"status\": \"paid\"\n    }\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

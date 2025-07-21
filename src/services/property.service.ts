@@ -2,31 +2,37 @@
 import api from './api';
 
 // Interface para um imóvel (pode ser mais detalhada)
-interface IProperty {
+export interface IProperty {
     _id: string;
     title: string;
+    description: string;
     price: number;
-    type: string;
+    type: 'apartment' | 'house' | 'rural' | 'land';
+    condition: 'new' | 'used' | 'construction';
     status: 'active' | 'inactive';
+    bedrooms?: number;
+    bathrooms?: number;
+    parkingSpaces?: number;
+    area?: number;
     address: {
         street: string;
+        number: string;
+        complement?: string;
+        neighborhood: string;
         city: string;
         state: string;
         zip: string;
         country: string;
-        number: string;
     };
-    // Adicione todos os campos que a API retorna
+    condominium?: {
+        _id: string;
+        name: string;
+    };
 }
 
-// DTO para o payload de criação/atualização
-// Pode ser importado do DTO do Zod no formulário
-interface IPropertyPayload {
-    title: string;
-    description: string;
-    price: number;
-    // ... outros campos
-}
+export type IPropertyPayload = Omit<IProperty, '_id' | 'status' | 'condominium'> & {
+    condominiumId?: string;
+};
 
 export const fetchProperties = async (): Promise<IProperty[]> => {
     const response = await api.get('/property');
