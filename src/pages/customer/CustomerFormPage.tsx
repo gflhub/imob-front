@@ -66,6 +66,7 @@ export function CustomerFormPage() {
             <CardContent>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(data => mutation.mutate(data))} className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                         <FormField control={form.control} name="name" render={({ field }) => (
                             <FormItem><FormLabel>Nome Completo</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                         )} />
@@ -81,6 +82,7 @@ export function CustomerFormPage() {
                         <FormField control={form.control} name="birth" render={({ field }) => (
                             <FormItem><FormLabel>Data de Nascimento</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>
                         )} />
+                        </div>
 
                         <div className="flex justify-end pt-4 gap-2">
                             <Button type="button" variant="outline" onClick={() => navigate(-1)}>

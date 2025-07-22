@@ -127,6 +127,7 @@ export function BrokerFormPage() {
                                 <TabsTrigger value="commission-ranges">Faixas de Comissão</TabsTrigger>
                             </TabsList>
                             <TabsContent value="personal-data" className='space-y-6'>
+                                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                                     <FormField control={form.control} name="name" render={({ field }) => (
                                         <FormItem><FormLabel>Nome Completo</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                                     )} />
@@ -142,6 +143,7 @@ export function BrokerFormPage() {
                                     <FormField control={form.control} name="birth" render={({ field }) => (
                                         <FormItem><FormLabel>Data de Nascimento</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>
                                     )} />
+                                </div>
                             </TabsContent>
                             <TabsContent value="commission-ranges">
                                 <Accordion type="single" collapsible className="w-full mb-5">

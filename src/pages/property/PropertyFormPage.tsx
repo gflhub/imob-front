@@ -26,9 +26,9 @@ const propertyFormSchema = z.object({
     price: z.coerce.number().positive({ message: "O preço deve ser um número positivo." }),
     type: z.enum(['apartment', 'house', 'rural', 'land'], { required_error: "Selecione um tipo." }),
     condition: z.enum(['new', 'used', 'construction'], { required_error: "Selecione uma condição." }),
-    bedrooms: z.coerce.number().int().min(0, "Número de quartos inválido.").optional(),
-    bathrooms: z.coerce.number().int().min(0, "Número de banheiros inválido.").optional(),
-    parkingSpaces: z.coerce.number().int().min(0, "Número de vagas inválido.").optional(),
+    bedrooms: z.string().optional(),
+    bathrooms: z.string().optional(),
+    parkingSpaces: z.string().optional(),
     area: z.coerce.number().positive("Tamanho em m² inválido.").optional(),
     address: z.object({
         street: z.string().min(3, "Rua inválida."),
@@ -129,17 +129,17 @@ export function PropertyFormPage() {
       });
 
     function onSubmit(data: PropertyFormData) {
+        const parseSelectValue = (value: string | undefined) => {
+            if (!value) return undefined;
+            if (value.endsWith('+')) return parseInt(value.slice(0, -1));
+            return parseInt(value);
+        };
+
         const payload: IPropertyPayload = {
-            title: data.title,
-            description: data.description,
-            price: data.price,
-            type: data.type,
-            condition: data.condition,
-            bedrooms: data.bedrooms,
-            bathrooms: data.bathrooms,
-            parkingSpaces: data.parkingSpaces,
-            area: data.area,
-            address: data.address,
+            ...data,
+            bedrooms: parseSelectValue(data.bedrooms),
+            bathrooms: parseSelectValue(data.bathrooms),
+            parkingSpaces: parseSelectValue(data.parkingSpaces),
             condominiumId: (data.type === 'apartment' || data.type === 'house') ? data.condominiumId : undefined,
         };
 
@@ -148,7 +148,7 @@ export function PropertyFormPage() {
         } else {
             createMutation.mutate(payload);
         }
-      }
+    }
 
     if (isLoadingData || isLoadingCondominiums) {
         return <div>Carregando dados do imóvel...</div>;
@@ -218,7 +218,7 @@ export function PropertyFormPage() {
                                         <FormLabel>Tipo de Imóvel</FormLabel>
                                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                                             <FormControl>
-                                                <SelectTrigger>
+                                                <SelectTrigger className='w-full'>
                                                     <SelectValue placeholder="Selecione o tipo" />
                                                 </SelectTrigger>
                                             </FormControl>
@@ -269,7 +269,7 @@ export function PropertyFormPage() {
                                         <FormLabel>Condição</FormLabel>
                                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                                             <FormControl>
-                                                <SelectTrigger>
+                                                <SelectTrigger className='w-full'>
                                                     <SelectValue placeholder="Selecione a condição" />
                                                 </SelectTrigger>
                                             </FormControl>
@@ -290,9 +290,19 @@ export function PropertyFormPage() {
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Quartos</FormLabel>
-                                        <FormControl>
-                                            <Input type="number" {...field} />
-                                        </FormControl>
+                                        <Select onValueChange={field.onChange} defaultValue={String(field.value)}>
+                                            <FormControl>
+                                                <SelectTrigger className='w-full'>
+                                                    <SelectValue placeholder="Selecione" />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                {[...Array(5)].map((_, i) => (
+                                                    <SelectItem key={i + 1} value={String(i + 1)}>{i + 1}</SelectItem>
+                                                ))}
+                                                <SelectItem value="6+">6+</SelectItem>
+                                            </SelectContent>
+                                        </Select>
                                         <FormMessage />
                                     </FormItem>
                                 )}
@@ -304,9 +314,19 @@ export function PropertyFormPage() {
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Banheiros</FormLabel>
-                                        <FormControl>
-                                            <Input type="number" {...field} />
-                                        </FormControl>
+                                        <Select onValueChange={field.onChange} defaultValue={String(field.value)}>
+                                            <FormControl>
+                                                <SelectTrigger className='w-full'>
+                                                    <SelectValue placeholder="Selecione" />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                {[...Array(5)].map((_, i) => (
+                                                    <SelectItem key={i + 1} value={String(i + 1)}>{i + 1}</SelectItem>
+                                                ))}
+                                                <SelectItem value="6+">6+</SelectItem>
+                                            </SelectContent>
+                                        </Select>
                                         <FormMessage />
                                     </FormItem>
                                 )}
@@ -318,9 +338,19 @@ export function PropertyFormPage() {
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Vagas de Garagem</FormLabel>
-                                        <FormControl>
-                                            <Input type="number" {...field} />
-                                        </FormControl>
+                                        <Select onValueChange={field.onChange} defaultValue={String(field.value)}>
+                                            <FormControl>
+                                                <SelectTrigger className='w-full'>
+                                                    <SelectValue placeholder="Selecione" />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                {[...Array(5)].map((_, i) => (
+                                                    <SelectItem key={i + 1} value={String(i + 1)}>{i + 1}</SelectItem>
+                                                ))}
+                                                <SelectItem value="6+">6+</SelectItem>
+                                            </SelectContent>
+                                        </Select>
                                         <FormMessage />
                                     </FormItem>
                                 )}
