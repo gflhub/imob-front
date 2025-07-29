@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createProperty, fetchPropertyById, updateProperty, type IPropertyPayload } from '@/services/property.service';
-import { fetchCondominiums } from '@/services/condominium.service';
+import { fetchCondominiums, type ICondominium } from '@/services/condominium.service';
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -26,10 +26,13 @@ const propertyFormSchema = z.object({
     price: z.coerce.number().positive({ message: "O preço deve ser um número positivo." }),
     type: z.enum(['apartment', 'house', 'rural', 'land'], { required_error: "Selecione um tipo." }),
     condition: z.enum(['new', 'used', 'construction'], { required_error: "Selecione uma condição." }),
-    bedrooms: z.string().optional(),
-    bathrooms: z.string().optional(),
-    parkingSpaces: z.string().optional(),
-    area: z.coerce.number().positive("Tamanho em m² inválido.").optional(),
+    attributes: z.object({
+        bedrooms: z.string().min(0, "Número de quartos inválido.").optional(),
+        bathrooms: z.string().min(0, "Número de banheiros inválido.").optional(),
+        parkingSpaces: z.string().min(0, "Número de vagas inválido.").optional(),
+    }),
+    totalArea: z.coerce.number().positive("Tamanho em m² inválido.").optional(),
+    privateArea: z.coerce.number().positive("Tamanho em m² inválido.").optional(),
     address: z.object({
         street: z.string().min(3, "Rua inválida."),
         number: z.string().min(1, "Número inválido."),
@@ -43,6 +46,29 @@ const propertyFormSchema = z.object({
 });
 
 type PropertyFormData = z.infer<typeof propertyFormSchema>;
+
+const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>, field: { onChange: (value: number) => void }) => {
+    const rawValue = e.target.value.replace(/\D/g, '');
+    if (rawValue === '' || rawValue === '0') {
+        field.onChange(0);
+    } else {
+        const numberValue = parseInt(rawValue, 10) / 100;
+        field.onChange(numberValue);
+    }
+};
+
+const formatPrice = (value: number) => {
+    if (isNaN(value)) return "0,00";
+    return new Intl.NumberFormat('pt-BR', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    }).format(value || 0);
+};
+
+const attributeOptions = [
+    ...[...Array(6)].map((_, i) => ({ value: String(i), label: String(i) })),
+    { value: "6+", label: "6+" }
+];
 
 export function PropertyFormPage() {
     const navigate = useNavigate();
@@ -58,7 +84,7 @@ export function PropertyFormPage() {
         enabled: isEditMode,
     });
 
-    const { data: condominiums, isLoading: isLoadingCondominiums } = useQuery({
+    const { data: condominiums, isLoading: isLoadingCondominiums } = useQuery<ICondominium[]>({
         queryKey: ['condominiums'],
         queryFn: fetchCondominiums,
     });
@@ -71,10 +97,13 @@ export function PropertyFormPage() {
             price: 0,
             type: "apartment",
             condition: "new",
-            bedrooms: 0,
-            bathrooms: 0,
-            parkingSpaces: 0,
-            area: 0,
+            attributes: {
+                bedrooms: '0',
+                bathrooms: '0',
+                parkingSpaces: '0',
+            },
+            totalArea: 0,
+            privateArea: 0,
             address: {
                 street: "",
                 number: "",
@@ -93,7 +122,7 @@ export function PropertyFormPage() {
 
     useEffect(() => {
         if (condominiumId) {
-            const selectedCondo = condominiums?.find(c => c._id === condominiumId);
+            const selectedCondo = condominiums?.find((c: ICondominium) => c._id === condominiumId);
             if (selectedCondo) {
                 form.setValue('address', selectedCondo.address);
             }
@@ -101,9 +130,15 @@ export function PropertyFormPage() {
     }, [condominiumId, condominiums, form]);
 
     useEffect(() => {
+        console.log("Existing property data:", existingProperty);
         if (existingProperty) {
             form.reset({
                 ...existingProperty,
+                attributes: {
+                    bedrooms: existingProperty.attributes.bedrooms?.toString(),
+                    bathrooms: existingProperty.attributes.bathrooms?.toString(),
+                    parkingSpaces: existingProperty.attributes.parkingSpaces?.toString(),
+                },
                 type: existingProperty.type as "apartment" | "house" | "rural" | "land",
                 condominiumId: existingProperty.condominium?._id || "",
                 address: existingProperty.condominium?.address || existingProperty.address,
@@ -117,7 +152,7 @@ export function PropertyFormPage() {
             queryClient.invalidateQueries({ queryKey: ['properties'] });
             navigate('/properties');
         },
-      });
+    });
 
     const updateMutation = useMutation({
         mutationFn: (data: IPropertyPayload) => updateProperty(id!, data),
@@ -126,21 +161,16 @@ export function PropertyFormPage() {
             queryClient.invalidateQueries({ queryKey: ['property', id] });
             navigate('/properties');
         },
-      });
+    });
 
     function onSubmit(data: PropertyFormData) {
-        const parseSelectValue = (value: string | undefined) => {
-            if (!value) return undefined;
-            if (value.endsWith('+')) return parseInt(value.slice(0, -1));
-            return parseInt(value);
-        };
+
+        console.log("Form data:", data);
 
         const payload: IPropertyPayload = {
             ...data,
-            bedrooms: parseSelectValue(data.bedrooms),
-            bathrooms: parseSelectValue(data.bathrooms),
-            parkingSpaces: parseSelectValue(data.parkingSpaces),
             condominiumId: (data.type === 'apartment' || data.type === 'house') ? data.condominiumId : undefined,
+            areaUnit: data.type === 'rural' ? 'ha' : 'm2',
         };
 
         if (isEditMode) {
@@ -155,7 +185,7 @@ export function PropertyFormPage() {
     }
 
     const isSubmitting = createMutation.isPending || updateMutation.isPending;
-    
+
 
     return (
         <Card>
@@ -187,7 +217,12 @@ export function PropertyFormPage() {
                                     <FormItem>
                                         <FormLabel>Preço (R$)</FormLabel>
                                         <FormControl>
-                                            <Input type="number" placeholder="250000" {...field} />
+                                            <Input
+                                                placeholder="250.000,00"
+                                                type="text"
+                                                value={formatPrice(field.value)}
+                                                onChange={(e) => handlePriceChange(e, field)}
+                                            />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -286,21 +321,20 @@ export function PropertyFormPage() {
 
                             <FormField
                                 control={form.control}
-                                name="bedrooms"
+                                name="attributes.bedrooms"
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Quartos</FormLabel>
-                                        <Select onValueChange={field.onChange} defaultValue={String(field.value)}>
+                                        <Select onValueChange={field.onChange} value={field.value}>
                                             <FormControl>
                                                 <SelectTrigger className='w-full'>
-                                                    <SelectValue placeholder="Selecione" />
+                                                    <SelectValue />
                                                 </SelectTrigger>
                                             </FormControl>
                                             <SelectContent>
-                                                {[...Array(5)].map((_, i) => (
-                                                    <SelectItem key={i + 1} value={String(i + 1)}>{i + 1}</SelectItem>
+                                                {attributeOptions.map((opt) => (
+                                                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
                                                 ))}
-                                                <SelectItem value="6+">6+</SelectItem>
                                             </SelectContent>
                                         </Select>
                                         <FormMessage />
@@ -310,21 +344,20 @@ export function PropertyFormPage() {
 
                             <FormField
                                 control={form.control}
-                                name="bathrooms"
+                                name="attributes.bathrooms"
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Banheiros</FormLabel>
-                                        <Select onValueChange={field.onChange} defaultValue={String(field.value)}>
+                                        <Select onValueChange={field.onChange} value={field.value}>
                                             <FormControl>
                                                 <SelectTrigger className='w-full'>
-                                                    <SelectValue placeholder="Selecione" />
+                                                    <SelectValue />
                                                 </SelectTrigger>
                                             </FormControl>
                                             <SelectContent>
-                                                {[...Array(5)].map((_, i) => (
-                                                    <SelectItem key={i + 1} value={String(i + 1)}>{i + 1}</SelectItem>
+                                                {attributeOptions.map((opt) => (
+                                                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
                                                 ))}
-                                                <SelectItem value="6+">6+</SelectItem>
                                             </SelectContent>
                                         </Select>
                                         <FormMessage />
@@ -334,21 +367,20 @@ export function PropertyFormPage() {
 
                             <FormField
                                 control={form.control}
-                                name="parkingSpaces"
+                                name="attributes.parkingSpaces"
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Vagas de Garagem</FormLabel>
-                                        <Select onValueChange={field.onChange} defaultValue={String(field.value)}>
+                                        <Select onValueChange={field.onChange} value={field.value}>
                                             <FormControl>
                                                 <SelectTrigger className='w-full'>
-                                                    <SelectValue placeholder="Selecione" />
+                                                    <SelectValue />
                                                 </SelectTrigger>
                                             </FormControl>
                                             <SelectContent>
-                                                {[...Array(5)].map((_, i) => (
-                                                    <SelectItem key={i + 1} value={String(i + 1)}>{i + 1}</SelectItem>
+                                                {attributeOptions.map((opt) => (
+                                                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
                                                 ))}
-                                                <SelectItem value="6+">6+</SelectItem>
                                             </SelectContent>
                                         </Select>
                                         <FormMessage />
@@ -358,10 +390,10 @@ export function PropertyFormPage() {
 
                             <FormField
                                 control={form.control}
-                                name="area"
+                                name="totalArea"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Tamanho (m²)</FormLabel>
+                                        <FormLabel>Área Total ({propertyType === 'rural' ? 'ha' : 'm²'})</FormLabel>
                                         <FormControl>
                                             <Input type="number" {...field} />
                                         </FormControl>
@@ -369,6 +401,21 @@ export function PropertyFormPage() {
                                     </FormItem>
                                 )}
                             />
+                            {(propertyType === 'apartment' || propertyType === 'house') && (
+                                <FormField
+                                    control={form.control}
+                                    name="privateArea"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Área Privativa (m²)</FormLabel>
+                                            <FormControl>
+                                                <Input type="number" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            )}
                         </div>
 
                         <h3 className="text-lg font-semibold mt-6">Endereço</h3>
@@ -422,3 +469,4 @@ export function PropertyFormPage() {
         </Card>
     );
 }
+

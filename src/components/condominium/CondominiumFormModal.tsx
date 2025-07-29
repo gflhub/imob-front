@@ -26,7 +26,6 @@ const condominiumFormSchema = z.object({
         city: z.string().min(2, "Cidade inválida."),
         state: z.string().length(2, "Estado inválido (ex: SP)."),
         zip: z.string().length(8, "CEP inválido."),
-        country: z.string().min(2, "País inválido."),
     })
 });
 
@@ -56,7 +55,6 @@ export function CondominiumFormModal({ isOpen, onClose, onSuccess }: Condominium
                 city: '',
                 state: '',
                 zip: '',
-                country: '',
             }
         },
     });
@@ -147,9 +145,6 @@ export function CondominiumFormModal({ isOpen, onClose, onSuccess }: Condominium
                                     <FormItem><FormLabel>CEP</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                                 )} />
                             </div>
-                            <FormField control={form.control} name="address.country" render={({ field }) => (
-                                <FormItem><FormLabel>País</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                            )} />
                         </div>
 
                         <DialogFooter>

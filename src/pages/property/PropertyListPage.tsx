@@ -1,6 +1,5 @@
-// src/pages/PropertyListPage.tsx
-import { useQuery } from '@tanstack/react-query';
-import { fetchProperties } from '@/services/property.service';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { disableProperty, fetchProperties } from '@/services/property.service';
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -55,11 +54,22 @@ function PropertiesCard({ children }: { children: React.ReactNode }) {
 }
 
 export function PropertyListPage() {
-    // O hook useQuery busca os dados e gerencia os estados de loading e erro para nós.
+    const queryClient = useQueryClient();
     const { data: properties, isLoading, isError } = useQuery({
-        queryKey: ['properties'], // Uma chave única para esta query
-        queryFn: fetchProperties, // A função que busca os dados
+        queryKey: ['properties'],
+        queryFn: fetchProperties,
     });
+
+    const mutation = useMutation({
+        mutationFn: disableProperty,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['properties'] });
+        },
+    });
+
+    const handleDisable = (id: string) => {
+        mutation.mutate(id);
+    };
 
     if (isLoading) {
         return <PropertiesCard>
@@ -80,10 +90,6 @@ export function PropertyListPage() {
             </TableRow>
         </PropertiesCard>;
     }
-
-    // if (isError) {
-    //     return <div>Erro ao buscar imóveis: {error.message}</div>;
-    // }
 
     return (
         <PropertiesCard>
@@ -113,7 +119,9 @@ export function PropertyListPage() {
                                         Editar
                                     </DropdownMenuItem>
                                 </Link>
-                                <DropdownMenuItem className="text-red-600">Desativar</DropdownMenuItem>
+                                <DropdownMenuItem className="text-red-600" onClick={() => handleDisable(property._id)} disabled={mutation.isPending}>
+                                    Desativar
+                                </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </TableCell>

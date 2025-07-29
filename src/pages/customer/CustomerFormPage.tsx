@@ -1,4 +1,3 @@
-// src/pages/customer/CustomerFormPage.tsx
 import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -6,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createCustomer, fetchCustomerById, updateCustomer } from '@/services/person.service';
+import { fetchAddressByZip } from '@/services/tools.service';
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,6 +19,15 @@ const customerFormSchema = z.object({
     phone: z.string().min(10, "Telefone inválido."),
     doc: z.string().min(11, "Documento inválido."),
     birth: z.string().min(8, "Data de nascimento inválida."),
+    address: z.object({
+        street: z.string().min(3, "Rua inválida."),
+        number: z.string().min(1, "Número inválido."),
+        complement: z.string().optional(),
+        neighborhood: z.string().min(2, "Bairro inválido."),
+        city: z.string().min(2, "Cidade inválida."),
+        state: z.string().length(2, "Estado inválido (ex: SP)."),
+        zip: z.string().length(8, "CEP inválido."),
+    })
 });
 
 type CustomerFormData = z.infer<typeof customerFormSchema>;
@@ -37,8 +46,21 @@ export function CustomerFormPage() {
 
     const form = useForm<CustomerFormData>({
         resolver: zodResolver(customerFormSchema),
-        defaultValues: { name: '', email: '', phone: '', doc: '', birth: '' },
+        defaultValues: { name: '', email: '', phone: '', doc: '', birth: '', address: { street: '', number: '', complement: '', neighborhood: '', city: '', state: '', zip: '' } },
     });
+
+    const zipValue = form.watch('address.zip');
+
+    useEffect(() => {
+        if (zipValue && zipValue.length === 8) {
+            fetchAddressByZip(zipValue).then(data => {
+                form.setValue('address.street', data.street);
+                form.setValue('address.neighborhood', data.neighborhood);
+                form.setValue('address.city', data.city);
+                form.setValue('address.state', data.state);
+            });
+        }
+    }, [zipValue, form]);
 
     useEffect(() => {
         if (existingCustomer) {
@@ -82,6 +104,37 @@ export function CustomerFormPage() {
                         <FormField control={form.control} name="birth" render={({ field }) => (
                             <FormItem><FormLabel>Data de Nascimento</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>
                         )} />
+                        </div>
+
+                        <h3 className="text-lg font-semibold mt-6">Endereço</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <FormField control={form.control} name="address.zip" render={({ field }) => (
+                                <FormItem><FormLabel>CEP</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                            )} />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <FormField control={form.control} name="address.street" render={({ field }) => (
+                                <FormItem className="md:col-span-3"><FormLabel>Rua</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                            )} />
+                            <FormField control={form.control} name="address.number" render={({ field }) => (
+                                <FormItem><FormLabel>Número</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                            )} />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <FormField control={form.control} name="address.complement" render={({ field }) => (
+                                <FormItem><FormLabel>Complemento</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                            )} />
+                            <FormField control={form.control} name="address.neighborhood" render={({ field }) => (
+                                <FormItem><FormLabel>Bairro</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                            )} />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <FormField control={form.control} name="address.city" render={({ field }) => (
+                                <FormItem><FormLabel>Cidade</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                            )} />
+                            <FormField control={form.control} name="address.state" render={({ field }) => (
+                                <FormItem><FormLabel>Estado (UF)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                            )} />
                         </div>
 
                         <div className="flex justify-end pt-4 gap-2">

@@ -11,8 +11,7 @@ export interface ICondominium {
         neighborhood: string;
         city: string;
         state: string;
-        zip: string;
-        country: string;
+        zip: string; 
     };
     monthlyFees: number;
     description?: string;

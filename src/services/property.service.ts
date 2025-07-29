@@ -1,5 +1,6 @@
 // src/services/property.service.ts
 import api from './api';
+import { type ICondominium } from './condominium.service';
 
 // Interface para um imóvel (pode ser mais detalhada)
 export interface IProperty {
@@ -10,10 +11,14 @@ export interface IProperty {
     type: 'apartment' | 'house' | 'rural' | 'land';
     condition: 'new' | 'used' | 'construction';
     status: 'active' | 'inactive';
-    bedrooms?: number;
-    bathrooms?: number;
-    parkingSpaces?: number;
-    area?: number;
+    attributes: {
+        bedrooms?: string;
+        bathrooms?: string;
+        parkingSpaces?: string;
+    };
+    totalArea?: number;
+    privateArea?: number;
+    areaUnit?: 'm2' | 'ha';
     address: {
         street: string;
         number: string;
@@ -22,12 +27,8 @@ export interface IProperty {
         city: string;
         state: string;
         zip: string;
-        country: string;
     };
-    condominium?: {
-        _id: string;
-        name: string;
-    };
+    condominium?: ICondominium;
 }
 
 export type IPropertyPayload = Omit<IProperty, '_id' | 'status' | 'condominium'> & {
@@ -54,5 +55,10 @@ export const createProperty = async (data: IPropertyPayload): Promise<IProperty>
 export const updateProperty = async (id: string, data: Partial<IPropertyPayload>): Promise<IProperty> => {
     // Usamos PATCH para atualizações parciais
     const response = await api.patch(`/property/${id}`, data);
+    return response.data;
+};
+
+export const disableProperty = async (id: string): Promise<IProperty> => {
+    const response = await api.patch(`/property/${id}/disable`);
     return response.data;
 };

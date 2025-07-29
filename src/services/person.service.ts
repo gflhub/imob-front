@@ -9,6 +9,15 @@ export interface IPerson {
     phone: string;
     doc: string;
     active: boolean;
+    address?: {
+        street: string;
+        number: string;
+        complement?: string;
+        neighborhood: string;
+        city: string;
+        state: string;
+        zip: string;
+    };
     commission?: {
         _id: string;
         ranges: ICommissionRange[];
