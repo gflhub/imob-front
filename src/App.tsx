@@ -22,6 +22,7 @@ import { BrokerListPage } from './pages/broker/BrokerListPage';
 import { BrokerFormPage } from './pages/broker/BrokerFormPage';
 import { CommissionListPage } from './pages/commission/CommissionListPage';
 import { CommissionFormPage } from './pages/commission/CommissionFormPage';
+import { CommissionSettingsPage } from './pages/settings/CommissionSettingsPage';
 
 
 
@@ -67,6 +68,7 @@ function AppRoutes() {
             <Route path="/payments" element={<PaymentFormPage />} />
             <Route path="/cashier" element={<CashierPage />} />
             <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/settings/commissions" element={<CommissionSettingsPage />} />
             
             <Route path="/settings/company" element={<CompanyListPage />} />
             <Route path="/settings/access-control" element={<AccessControlPage />} />

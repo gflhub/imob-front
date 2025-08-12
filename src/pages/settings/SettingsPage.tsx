@@ -1,7 +1,7 @@
 // src/pages/settings/SettingsPage.tsx
 import { Link } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { ArrowRight, Building, Users, Target, ShieldCheck } from 'lucide-react';
+import { ArrowRight, Building, Users, Target, ShieldCheck, Percent } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 export function SettingsPage() {
@@ -26,6 +26,12 @@ export function SettingsPage() {
             href: '/settings/access-control',
             icon: ShieldCheck,
             adminOnly: true,
+        },
+        {
+            title: 'Regras de Comissão',
+            description: 'Defina as faixas de comissão para os corretores.',
+            href: '/settings/commissions',
+            icon: Percent,
         },
         {
             title: 'Metas e Comissões',

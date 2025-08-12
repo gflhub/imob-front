@@ -4,10 +4,6 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useFieldArray } from 'react-hook-form';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Trash } from 'lucide-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createBroker, fetchBrokerById, updateBroker } from '@/services/person.service';
 
@@ -16,43 +12,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
-// Schema de validação com Zod para o formulário de corretor
-const commissionRangeSchema = z.object({
-    minAmount: z.coerce.number().min(0, "Valor inicial deve ser positivo."),
-    maxAmount: z.coerce.number().positive("Valor final deve ser positivo."),
-    rate: z.coerce.number().min(0, "Valor da comissão deve ser positivo.").max(100, "Valor da comissão não pode exceder 100%"),
-}).refine(data => data.minAmount < data.maxAmount, {
-    message: "Valor inicial deve ser menor que o valor final.",
-    path: ["minAmount"],
-});
-
 const brokerFormSchema = z.object({
     name: z.string().min(3, "O nome deve ter pelo menos 3 caracteres."),
     email: z.string().email("Formato de email inválido."),
     phone: z.string().min(10, "Telefone inválido."),
     doc: z.string().min(11, "Documento inválido."),
     birth: z.string().min(8, "Data de nascimento inválida.").optional(),
-    commissionRanges: z.array(commissionRangeSchema).optional(),
-}).superRefine((data, ctx) => {
-    if (data.commissionRanges && data.commissionRanges.length > 1) {
-        for (let i = 0; i < data.commissionRanges.length; i++) {
-            for (let j = i + 1; j < data.commissionRanges.length; j++) {
-                const range1 = data.commissionRanges[i];
-                const range2 = data.commissionRanges[j];
-
-                // Check for overlap
-                if (
-                    (range1.minAmount < range2.maxAmount && range1.maxAmount > range2.minAmount)
-                ) {
-                    ctx.addIssue({
-                        code: z.ZodIssueCode.custom,
-                        message: `Faixas de comissão ${i + 1} e ${j + 1} se sobrepõem.`, // More specific message
-                        path: ['commissionRanges'], // Point to the array itself
-                    });
-                }
-            }
-        }
-    }
 });
 
 type BrokerFormData = z.infer<typeof brokerFormSchema>;
@@ -74,36 +39,15 @@ export function BrokerFormPage() {
         defaultValues: {},
     });
 
-    const { fields: commissionRangeFields, append: appendCommissionRange, remove: removeCommissionRange } = useFieldArray({
-        control: form.control,
-        name: "commissionRanges",
-    });
-
     useEffect(() => {
         if (existingBroker) {
-            const transformedRanges = existingBroker.commission?.ranges.map(range => ({
-                minAmount: range.minAmount,
-                maxAmount: range.maxAmount,
-                rate: range.rate * 100, // Convert to percentage
-            })) || [];
-
-            form.reset({
-                ...existingBroker,
-                commissionRanges: transformedRanges,
-            });
+            form.reset(existingBroker);
         }
     }, [existingBroker, form]);
 
     const mutation = useMutation({
         mutationFn: (data: BrokerFormData) => {
-            const dataToSend = {
-                ...data,
-                commissionRanges: data.commissionRanges?.map(range => ({
-                    ...range,
-                    rate: range.rate / 100, // Convert back to decimal
-                })),
-            };
-            return isEditMode ? updateBroker(id!, dataToSend) : createBroker(dataToSend);
+            return isEditMode ? updateBroker(id!, data) : createBroker(data);
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['brokers'] });
@@ -121,63 +65,25 @@ export function BrokerFormPage() {
             <CardContent>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(data => mutation.mutate(data))} className="space-y-4">
-                        <Tabs defaultValue="personal-data" className="w-full">
-                            <TabsList className="grid w-full grid-cols-2">
-                                <TabsTrigger value="personal-data">Dados Pessoais</TabsTrigger>
-                                <TabsTrigger value="commission-ranges">Faixas de Comissão</TabsTrigger>
-                            </TabsList>
-                            <TabsContent value="personal-data" className='space-y-6'>
-                                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                                    <FormField control={form.control} name="name" render={({ field }) => (
-                                        <FormItem><FormLabel>Nome Completo</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                                    )} />
-                                    <FormField control={form.control} name="email" render={({ field }) => (
-                                        <FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" {...field} /></FormControl><FormMessage /></FormItem>
-                                    )} />
-                                    <FormField control={form.control} name="phone" render={({ field }) => (
-                                        <FormItem><FormLabel>Telefone</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                                    )} />
-                                    <FormField control={form.control} name="doc" render={({ field }) => (
-                                        <FormItem><FormLabel>Documento (CPF/CNPJ)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                                    )} />
-                                    <FormField control={form.control} name="birth" render={({ field }) => (
-                                        <FormItem><FormLabel>Data de Nascimento</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>
-                                    )} />
-                                </div>
-                            </TabsContent>
-                            <TabsContent value="commission-ranges">
-                                <Accordion type="single" collapsible className="w-full mb-5">
-                                    {commissionRangeFields.map((field, index) => (
-                                        <AccordionItem value={`item-${index}`} key={field.id}>
-                                            <AccordionTrigger>
-                                                Faixa de Comissão #{index + 1}: R$ {field.minAmount} - R$ {field.maxAmount} ({field.rate}%)
-                                                <Button type="button" variant="ghost" size="icon" onClick={() => removeCommissionRange(index)} className="ml-auto">
-                                                    <Trash className="h-4 w-4" />
-                                                </Button>
-                                            </AccordionTrigger>
-                                            <AccordionContent className="flex flex-col gap-4 text-balance">
-                                                <FormField control={form.control} name={`commissionRanges.${index}.minAmount`} render={({ field }) => (
-                                                    <FormItem><FormLabel>Valor Mínimo</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
-                                                )} />
-                                                <FormField control={form.control} name={`commissionRanges.${index}.maxAmount`} render={({ field }) => (
-                                                    <FormItem><FormLabel>Valor Máximo</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
-                                                )} />
-                                                <FormField control={form.control} name={`commissionRanges.${index}.rate`} render={({ field }) => (
-                                                    <FormItem><FormLabel>Taxa de Comissão (%)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
-                                                )} />
-                                            </AccordionContent>
-                                        </AccordionItem>
-                                    ))}
-                                </Accordion>
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={() => appendCommissionRange({ minAmount: 0, maxAmount: 0, rate: 0 })}
-                                >
-                                    Adicionar Faixa de Comissão
-                                </Button>
-                            </TabsContent>
-                        </Tabs>
+                        <div className='space-y-6'>
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                                <FormField control={form.control} name="name" render={({ field }) => (
+                                    <FormItem><FormLabel>Nome Completo</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                                )} />
+                                <FormField control={form.control} name="email" render={({ field }) => (
+                                    <FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" {...field} /></FormControl><FormMessage /></FormItem>
+                                )} />
+                                <FormField control={form.control} name="phone" render={({ field }) => (
+                                    <FormItem><FormLabel>Telefone</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                                )} />
+                                <FormField control={form.control} name="doc" render={({ field }) => (
+                                    <FormItem><FormLabel>Documento (CPF/CNPJ)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                                )} />
+                                <FormField control={form.control} name="birth" render={({ field }) => (
+                                    <FormItem><FormLabel>Data de Nascimento</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>
+                                )} />
+                            </div>
+                        </div>
                         <div className="flex justify-end pt-4 gap-2">
                             <Button type="button" variant="outline" onClick={() => navigate(-1)}>
                                 Cancelar

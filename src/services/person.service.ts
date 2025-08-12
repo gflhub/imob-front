@@ -31,7 +31,7 @@ export interface ICommissionRange {
     rate: number;
 }
 
-export type IPersonPayload = Omit<IPerson, '_id' | 'active' | 'companyId' | 'type'> & { birth?: string; };
+export type IPersonPayload = Omit<IPerson, '_id' | 'active' | 'companyId' | 'type'> & { birth?: string; commissionRanges?: ICommissionRange[] };
 
 export const fetchPersons = async (): Promise<IPerson[]> => {
     const response = await api.get('/person');
