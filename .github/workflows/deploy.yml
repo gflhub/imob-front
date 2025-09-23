@@ -5,6 +5,9 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+env:
+  VITE_API_URL: ${{ secrets.VITE_API_URL }}
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -23,12 +26,25 @@ jobs:
         
       - name: Build
         run: npm run build
+        env:
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+      
+      - name: Verify build output
+        run: ls -la dist/
         
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
         
       - name: Deploy to Vercel
-        run: vercel --prod --token ${{ secrets.VERCEL_TOKEN }} --confirm
+        run: |
+          vercel --token ${{ secrets.VERCEL_TOKEN }} \
+                --scope ${{ secrets.VERCEL_ORG_ID }} \
+                --confirm \
+                --prod
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      
+      - name: Verify deployment
+        run: |
+          curl -s https://${{ secrets.VERCEL_PROJECT_ID }}.vercel.app | head -n 10
