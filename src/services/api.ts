@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: 'http://localhost:5000/api', // A URL base da sua API NestJS
+    baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
 });
 
 // Interceptor para adicionar o token a cada requisição

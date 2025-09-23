@@ -9,6 +9,12 @@ export function SettingsPage() {
 
     const settingsItems = [
         {
+            title: 'Configurações de Pagamento',
+            description: 'Defina a porcentagem de entrada e métodos de pagamento.',
+            href: '/settings/payment',
+            icon: Percent,
+        },
+        {
             title: 'Dados da Empresa',
             description: 'Visualize e edite as informações da sua empresa.',
             href: '/settings/company',

@@ -101,9 +101,6 @@ export function BrokerListPage() {
                                 <Link to={`/brokers/edit/${broker._id}`}>
                                     <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Editar</DropdownMenuItem>
                                 </Link>
-                                <Link to={`/brokers/${broker._id}/commissions`}>
-                                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Comissões</DropdownMenuItem>
-                                </Link>
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </TableCell>

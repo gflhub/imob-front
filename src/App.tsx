@@ -17,6 +17,7 @@ import { OrderFormPage } from './pages/order/OrderFormPage';
 import { OrderDetailPage } from './pages/order/OrderDetailPage';
 import { PaymentFormPage } from './pages/payment/PaymentFormPage';
 import { SettingsPage } from './pages/settings/SettingsPage';
+import { PaymentSettingsPage } from './pages/settings/PaymentSettingsPage';
 import { CashierPage } from './pages/cashier/CashierPage';
 import { BrokerListPage } from './pages/broker/BrokerListPage';
 import { BrokerFormPage } from './pages/broker/BrokerFormPage';
@@ -68,6 +69,7 @@ function AppRoutes() {
             <Route path="/payments" element={<PaymentFormPage />} />
             <Route path="/cashier" element={<CashierPage />} />
             <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/settings/payment" element={<PaymentSettingsPage />} />
             <Route path="/settings/commissions" element={<CommissionSettingsPage />} />
             
             <Route path="/settings/company" element={<CompanyListPage />} />

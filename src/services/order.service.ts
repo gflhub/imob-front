@@ -14,12 +14,21 @@ export interface IOrder {
 }
 
 // Payload para criar uma nova ordem
+export interface IPaymentDefinition {
+    payerId: string;
+    paymentMethod: string;
+    totalAmount: number;
+    qtdInstallments: number;
+    firstDueDate: string;
+}
+
 export interface IOrderPayload {
     orderDate: string;
     items: { _id: string; price: number }[];
     sellers: string[];
     buyers: string[];
     brokers: string[];
+    payments: IPaymentDefinition[];
 }
 
 export const fetchOrders = async (): Promise<IOrder[]> => {
