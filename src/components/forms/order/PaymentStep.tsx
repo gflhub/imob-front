@@ -45,7 +45,7 @@ export function PaymentStep({ buyers, totalAmount, isLoading, onBack, onSubmit }
             dueDate.setDate(dueDate.getDate() + 30);
 
             form.reset({
-                paymentMethod: settings.paymentMethods[0]?.value || '',
+                paymentMethod: settings.paymentMethods[0] || '',
                 qtdInstallments: 1,
                 firstDueDate: dueDate.toISOString().split('T')[0],
                 totalAmount: totalAmount * (settings.paymentPercentage / 100),
@@ -112,9 +112,9 @@ export function PaymentStep({ buyers, totalAmount, isLoading, onBack, onSubmit }
                                     </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                    {settings?.paymentMethods.map(method => (
-                                        <SelectItem key={method.value} value={method.value}>
-                                            {method.value}
+                                    {settings?.paymentMethods.map((method, index) => (
+                                        <SelectItem key={index} value={method}>
+                                            {method}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
