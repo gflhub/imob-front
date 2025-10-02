@@ -26,7 +26,7 @@ export interface IProperty {
         neighborhood: string;
         city: string;
         state: string;
-        zip: string;
+        zip?: string;
     };
     condominium?: ICondominium;
 }
