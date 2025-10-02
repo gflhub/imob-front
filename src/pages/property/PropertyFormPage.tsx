@@ -1,7 +1,7 @@
 // src/pages/PropertyFormPage.tsx
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
+import { useForm, type FieldErrors } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -31,8 +31,8 @@ const propertyFormSchema = z.object({
         bathrooms: z.string().min(0, "Número de banheiros inválido.").optional(),
         parkingSpaces: z.string().min(0, "Número de vagas inválido.").optional(),
     }),
-    totalArea: z.coerce.number().positive("Tamanho em m² inválido.").optional(),
-    privateArea: z.coerce.number().positive("Tamanho em m² inválido.").optional(),
+    totalArea: z.coerce.number().min(0, "Tamanho em m² inválido.").optional(),
+    privateArea: z.coerce.number().min(0, "Área privativa não pode ser negativa.").optional(),
     address: z.object({
         street: z.string().min(3, "Rua inválida."),
         number: z.string().min(1, "Número inválido."),
@@ -40,7 +40,7 @@ const propertyFormSchema = z.object({
         neighborhood: z.string().min(2, "Bairro inválido."),
         city: z.string().min(2, "Cidade inválida."),
         state: z.string().length(2, "Estado inválido (ex: SP)."),
-        zip: z.string().length(8, "CEP inválido.")
+        zip: z.string().optional()
     }),
     condominiumId: z.string().optional(),
 });
@@ -49,26 +49,21 @@ type PropertyFormData = z.infer<typeof propertyFormSchema>;
 
 const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>, field: { onChange: (value: number) => void }) => {
     const rawValue = e.target.value.replace(/\D/g, '');
-    if (rawValue === '' || rawValue === '0') {
-        field.onChange(0);
-    } else {
-        const numberValue = parseInt(rawValue, 10) / 100;
-        field.onChange(numberValue);
-    }
+    const numberValue = parseInt(rawValue, 10);
+    field.onChange(isNaN(numberValue) ? 0 : numberValue);
 };
 
 const formatPrice = (value: number) => {
-    if (isNaN(value)) return "0,00";
-    return new Intl.NumberFormat('pt-BR', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-    }).format(value || 0);
+    if (!value || isNaN(value)) return "";
+    return new Intl.NumberFormat('pt-BR').format(value);
 };
 
 const attributeOptions = [
     ...[...Array(6)].map((_, i) => ({ value: String(i), label: String(i) })),
     { value: "6+", label: "6+" }
 ];
+
+const brazilianStates = ["AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"];
 
 export function PropertyFormPage() {
     const navigate = useNavigate();
@@ -94,7 +89,7 @@ export function PropertyFormPage() {
         defaultValues: {
             title: "",
             description: "",
-            price: 0,
+            price: undefined,
             type: "apartment",
             condition: "new",
             attributes: {
@@ -102,8 +97,8 @@ export function PropertyFormPage() {
                 bathrooms: '0',
                 parkingSpaces: '0',
             },
-            totalArea: 0,
-            privateArea: 0,
+            totalArea: undefined,
+            privateArea: undefined,
             address: {
                 street: "",
                 number: "",
@@ -180,6 +175,10 @@ export function PropertyFormPage() {
         }
     }
 
+    const onFormError = (errors: FieldErrors<PropertyFormData>) => {
+        console.error("Form validation failed:", errors);
+    };
+
     if (isLoadingData || isLoadingCondominiums) {
         return <div>Carregando dados do imóvel...</div>;
     }
@@ -195,7 +194,7 @@ export function PropertyFormPage() {
             </CardHeader>
             <CardContent>
                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                    <form onSubmit={form.handleSubmit(onSubmit, onFormError)} className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                             <FormField
                                 control={form.control}
@@ -218,7 +217,7 @@ export function PropertyFormPage() {
                                         <FormLabel>Preço (R$)</FormLabel>
                                         <FormControl>
                                             <Input
-                                                placeholder="250.000,00"
+                                                placeholder="250.000"
                                                 type="text"
                                                 value={formatPrice(field.value)}
                                                 onChange={(e) => handlePriceChange(e, field)}
@@ -296,97 +295,103 @@ export function PropertyFormPage() {
                                 </div>
                             )}
 
-                            <FormField
-                                control={form.control}
-                                name="condition"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Condição</FormLabel>
-                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                            <FormControl>
-                                                <SelectTrigger className='w-full'>
-                                                    <SelectValue placeholder="Selecione a condição" />
-                                                </SelectTrigger>
-                                            </FormControl>
-                                            <SelectContent>
-                                                <SelectItem value="new">Novo</SelectItem>
-                                                <SelectItem value="used">Usado</SelectItem>
-                                                <SelectItem value="construction">Em Construção</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+                            {propertyType !== 'land' && (
+                                <FormField
+                                    control={form.control}
+                                    name="condition"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Condição</FormLabel>
+                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                <FormControl>
+                                                    <SelectTrigger className='w-full'>
+                                                        <SelectValue placeholder="Selecione a condição" />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    <SelectItem value="new">Novo</SelectItem>
+                                                    <SelectItem value="used">Usado</SelectItem>
+                                                    <SelectItem value="construction">Em Construção</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            )}
 
-                            <FormField
-                                control={form.control}
-                                name="attributes.bedrooms"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Quartos</FormLabel>
-                                        <Select onValueChange={field.onChange} value={field.value}>
-                                            <FormControl>
-                                                <SelectTrigger className='w-full'>
-                                                    <SelectValue />
-                                                </SelectTrigger>
-                                            </FormControl>
-                                            <SelectContent>
-                                                {attributeOptions.map((opt) => (
-                                                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+                            {propertyType !== 'land' && (
+                                <>
+                                    <FormField
+                                        control={form.control}
+                                        name="attributes.bedrooms"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Quartos</FormLabel>
+                                                <Select onValueChange={field.onChange} value={field.value}>
+                                                    <FormControl>
+                                                        <SelectTrigger className='w-full'>
+                                                            <SelectValue />
+                                                        </SelectTrigger>
+                                                    </FormControl>
+                                                    <SelectContent>
+                                                        {attributeOptions.map((opt) => (
+                                                            <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
 
-                            <FormField
-                                control={form.control}
-                                name="attributes.bathrooms"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Banheiros</FormLabel>
-                                        <Select onValueChange={field.onChange} value={field.value}>
-                                            <FormControl>
-                                                <SelectTrigger className='w-full'>
-                                                    <SelectValue />
-                                                </SelectTrigger>
-                                            </FormControl>
-                                            <SelectContent>
-                                                {attributeOptions.map((opt) => (
-                                                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+                                    <FormField
+                                        control={form.control}
+                                        name="attributes.bathrooms"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Banheiros</FormLabel>
+                                                <Select onValueChange={field.onChange} value={field.value}>
+                                                    <FormControl>
+                                                        <SelectTrigger className='w-full'>
+                                                            <SelectValue />
+                                                        </SelectTrigger>
+                                                    </FormControl>
+                                                    <SelectContent>
+                                                        {attributeOptions.map((opt) => (
+                                                            <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
 
-                            <FormField
-                                control={form.control}
-                                name="attributes.parkingSpaces"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Vagas de Garagem</FormLabel>
-                                        <Select onValueChange={field.onChange} value={field.value}>
-                                            <FormControl>
-                                                <SelectTrigger className='w-full'>
-                                                    <SelectValue />
-                                                </SelectTrigger>
-                                            </FormControl>
-                                            <SelectContent>
-                                                {attributeOptions.map((opt) => (
-                                                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+                                    <FormField
+                                        control={form.control}
+                                        name="attributes.parkingSpaces"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Vagas de Garagem</FormLabel>
+                                                <Select onValueChange={field.onChange} value={field.value}>
+                                                    <FormControl>
+                                                        <SelectTrigger className='w-full'>
+                                                            <SelectValue />
+                                                        </SelectTrigger>
+                                                    </FormControl>
+                                                    <SelectContent>
+                                                        {attributeOptions.map((opt) => (
+                                                            <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </>
+                            )}
 
                             <FormField
                                 control={form.control}
@@ -420,6 +425,11 @@ export function PropertyFormPage() {
 
                         <h3 className="text-lg font-semibold mt-6">Endereço</h3>
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <FormField control={form.control} name="address.zip" render={({ field }) => (
+                                <FormItem><FormLabel>CEP</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                            )} />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                             <FormField control={form.control} name="address.street" render={({ field }) => (
                                 <FormItem className="md:col-span-3"><FormLabel>Rua</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                             )} />
@@ -439,13 +449,29 @@ export function PropertyFormPage() {
                             <FormField control={form.control} name="address.city" render={({ field }) => (
                                 <FormItem><FormLabel>Cidade</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                             )} />
-                            <FormField control={form.control} name="address.state" render={({ field }) => (
-                                <FormItem><FormLabel>Estado (UF)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                            )} />
+                            <FormField
+                                control={form.control}
+                                name="address.state"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Estado (UF)</FormLabel>
+                                        <Select onValueChange={field.onChange} value={field.value}>
+                                            <FormControl>
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="UF" />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                {brazilianStates.map((state) => (
+                                                    <SelectItem key={state} value={state}>{state}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
                         </div>
-                        <FormField control={form.control} name="address.zip" render={({ field }) => (
-                            <FormItem><FormLabel>CEP</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                        )} />
 
                         <div className="flex justify-end gap-2">
                             <Button type="button" variant="outline" onClick={() => navigate(-1)}>
@@ -469,4 +495,3 @@ export function PropertyFormPage() {
         </Card>
     );
 }
-
